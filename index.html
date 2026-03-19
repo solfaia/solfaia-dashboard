@@ -1052,7 +1052,7 @@ let data = { user: { name: 'David', streak: 0, lastCompletedDate: null, totalCom
     // Credentials - encoded for basic obfuscation
     const CREDENTIALS = { email: 'david@solfaia.com', password: 'solfaia2026' };
     const GIST_ID = '22aa3ff8e548f54a43bb10e833d4e76b';
-    const GIST_TOKEN = '';
+    const GIST_TOKEN = localStorage.getItem('solfaia_gist_token') || '';
 
 // Community Gist - shared across all community members
 const COMMUNITY_GIST_ID = 'c0mmun1tyd4shb04rd4t4'; // TODO: Create community gist
@@ -1199,6 +1199,16 @@ function updateCommunityOnLogin() {
       document.getElementById('email').value = '';
       document.getElementById('password').value = '';
     }
+    function saveGistToken() {
+      const token = prompt('Enter your GitHub Gist token for data sync:');
+      if (token) {
+        localStorage.setItem('solfaia_gist_token', token);
+        GIST_TOKEN = token;
+        alert('Gist token saved! Data will sync automatically.');
+        loadData();
+      }
+    }
+
     function render() {
       renderCommunity();
 
