@@ -1,0 +1,2258 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>David's Command Center</title>
+  <link rel="icon" type="image/png" href="david_os_favicon.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg-primary: #0a0a0f;
+      --bg-secondary: #12121a;
+      --bg-card: #1a1a24;
+      --bg-hover: #22222e;
+      --text-primary: #f0f0f5;
+      --text-secondary: #8888a0;
+      --text-muted: #555566;
+      --accent: #6366f1;
+      --accent-glow: rgba(99, 102, 241, 0.3);
+      --urgent: #ef4444;
+      --urgent-bg: rgba(239, 68, 68, 0.15);
+      --normal: #f59e0b;
+      --normal-bg: rgba(245, 158, 11, 0.15);
+      --low: #22c55e;
+      --low-bg: rgba(34, 197, 94, 0.15);
+      --border: #2a2a3a;
+      --success: #22c55e;
+      --gradient-start: #6366f1;
+      --gradient-end: #8b5cf6;
+    }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: 'Inter', -apple-system, sans-serif;
+      background: var(--bg-primary);
+      color: var(--text-primary);
+      min-height: 100vh;
+      line-height: 1.6;
+    }
+    #auth-screen {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      background: radial-gradient(ellipse at top, #1a1a2e 0%, var(--bg-primary) 70%);
+    }
+    .auth-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 24px;
+      padding: 48px;
+      width: 100%;
+      max-width: 420px;
+      box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+    }
+    .auth-logo { text-align: center; margin-bottom: 32px; }
+    .auth-logo h1 {
+      font-size: 28px;
+      font-weight: 700;
+      background: linear-gradient(135deg, var(--gradient-start), var(--gradient-end));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+    .auth-logo p { color: var(--text-secondary); font-size: 14px; margin-top: 8px; }
+    .form-group { margin-bottom: 20px; }
+    .form-group label { display: block; font-size: 13px; font-weight: 500; color: var(--text-secondary); margin-bottom: 8px; }
+    .form-group input, .form-group select {
+      width: 100%;
+      padding: 14px 16px;
+      background: var(--bg-secondary);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      color: var(--text-primary);
+      font-size: 15px;
+      transition: all 0.2s;
+    }
+    .form-group input:focus, .form-group select:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-glow); }
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      padding: 14px 24px;
+      border-radius: 12px;
+      font-size: 15px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+      border: none;
+    }
+    .btn-primary { width: 100%; background: linear-gradient(135deg, var(--gradient-start), var(--gradient-end)); color: white; }
+    .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 10px 30px var(--accent-glow); }
+    #dashboard { display: none; }
+    .header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 20px 32px;
+      background: var(--bg-secondary);
+      border-bottom: 1px solid var(--border);
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+    .header-left { display: flex; align-items: center; gap: 16px; }
+    .logo {
+      font-size: 20px;
+      font-weight: 700;
+      background: linear-gradient(135deg, var(--gradient-start), var(--gradient-end));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+    .avatar-display { display: flex; align-items: center; gap: 10px; padding: 6px 12px; background: var(--bg-card); border-radius: 12px; cursor: pointer; }
+    .level-info-overlay { background: var(--bg-card); border-radius: 14px; padding: 16px; margin-bottom: 12px; }
+    .avatar-hero-card { background: linear-gradient(135deg, var(--bg-card) 0%, var(--bg-secondary) 100%); }
+    .avatar-hero-emoji { font-size: 64px; cursor: pointer; transition: transform 0.2s; }
+    .avatar-hero-emoji:hover { transform: scale(1.1); }
+    .avatar-hero-name { font-size: 18px; font-weight: 600; margin-top: 10px; cursor: pointer; color: var(--accent); }
+    .avatar-hero-level { font-size: 14px; color: var(--text-secondary); margin-top: 4px; }
+    .avatar-hero-xp { font-size: 13px; color: var(--text-muted); margin-top: 4px; }
+    .calendar-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; text-align: center; }
+    .calendar-header { font-size: 11px; color: var(--text-muted); padding: 4px; }
+    .calendar-day { font-size: 12px; padding: 6px 2px; border-radius: 6px; cursor: pointer; position: relative; }
+    .calendar-day:hover { background: var(--bg-hover); }
+    .calendar-day.today { border: 1px solid var(--accent); }
+    .calendar-day.has-data { font-weight: 600; }
+    .calendar-dot { width: 6px; height: 6px; border-radius: 50%; position: absolute; bottom: 2px; left: 50%; transform: translateX(-50%); }
+    .calendar-dot.high { background: var(--low); }
+    .calendar-dot.medium { background: #f59e0b; }
+    .calendar-dot.low { background: var(--urgent); }
+    .calendar-day-details { margin-top: 12px; padding-top: 12px; border-top: 1px solid var(--border); }
+    .calendar-day-title { font-size: 13px; font-weight: 600; margin-bottom: 8px; }
+    .calendar-day-stat { font-size: 12px; color: var(--text-secondary); margin: 4px 0; }
+    .avatar-emoji { font-size: 28px; }
+    .avatar-info { display: flex; flex-direction: column; gap: 2px; }
+    .avatar-level { font-size: 11px; font-weight: 600; color: var(--accent); }
+    .avatar-xp { font-size: 10px; color: var(--text-muted); }
+    .xp-bar { width: 60px; height: 4px; background: var(--bg-primary); border-radius: 2px; }
+    .xp-fill { height: 100%; background: linear-gradient(90deg, var(--accent), var(--gradient-end)); border-radius: 2px; transition: width 0.3s; }
+    .streak-badge {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      padding: 6px 12px;
+      background: var(--urgent-bg);
+      border-radius: 20px;
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--urgent);
+    }
+    .moon-badge {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      padding: 6px 12px;
+      background: var(--bg-card);
+      border-radius: 20px;
+      font-size: 13px;
+      cursor: pointer;
+    }
+    .moon-badge:hover { background: var(--bg-hover); }
+    #moon-emoji { font-size: 16px; }
+    .moon-hero { display: flex; justify-content: space-between; align-items: center; background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%); border-radius: 12px; padding: 12px 16px; border: 1px solid var(--border); cursor: pointer; transition: all 0.3s; }
+    .moon-hero:hover { border-color: var(--accent); }
+    .moon-hero.expanded { flex-direction: column; align-items: stretch; gap: 16px; }
+    .moon-hero-content { display: flex; align-items: center; gap: 12px; }
+    .moon-hero-icon { font-size: 28px; }
+    .moon-hero-phase { font-size: 14px; font-weight: 600; }
+    .moon-hero-dates { font-size: 11px; color: var(--text-secondary); }
+    .moon-hero-countdowns { display: flex; gap: 16px; }
+    .moon-hero-full { display: none; }
+    .moon-hero.expanded .moon-hero-full { display: block; }
+    .moon-hero.expanded .moon-hero-countdowns { display: none; }
+    .moon-full-year { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-top: 12px; padding-top: 12px; border-top: 1px solid var(--border); }
+    .moon-list { display: flex; flex-direction: column; gap: 6px; }
+    .moon-list-title { font-size: 11px; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 6px; }
+    .moon-list-item { display: flex; justify-content: space-between; font-size: 12px; }
+    .moon-list-date { font-weight: 500; }
+    .moon-list-time { color: var(--text-muted); }
+    .moon-countdown-item { text-align: center; }
+    .moon-countdown-days { font-size: 18px; font-weight: 700; color: var(--accent); }
+    .moon-countdown-label { font-size: 9px; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.5px; }
+    .header-right { display: flex; align-items: center; gap: 16px; }
+    .quick-add {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 16px;
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      color: var(--text-secondary);
+      font-size: 14px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .quick-add:hover { border-color: var(--accent); color: var(--text-primary); }
+    .btn-logout {
+      padding: 8px 16px;
+      background: transparent;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      color: var(--text-secondary);
+      font-size: 14px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .btn-logout:hover { border-color: var(--urgent); color: var(--urgent); }
+    .main {
+      display: grid;
+      grid-template-columns: 1fr 380px;
+      gap: 24px;
+      padding: 24px 32px;
+      max-width: 1600px;
+      margin: 0 auto;
+    }
+    .left-column, .right-column { display: flex; flex-direction: column; gap: 24px; }
+    .card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      padding: 24px;
+    }
+    .card-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px; }
+    .card-title { font-size: 16px; font-weight: 600; display: flex; align-items: center; gap: 10px; }
+    .card-count { font-size: 13px; color: var(--text-muted); font-weight: 400; }
+    .section-points { font-size: 11px; color: var(--accent); font-weight: 500; background: var(--accent-bg); padding: 2px 8px; border-radius: 10px; margin-left: auto; }
+    .big3-list { display: flex; flex-direction: column; gap: 12px; }
+    .big3-item {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      padding: 16px;
+      background: var(--bg-secondary);
+      border-radius: 14px;
+      cursor: pointer;
+      transition: all 0.2s;
+      border: 2px solid transparent;
+    }
+    .big3-item:hover { background: var(--bg-hover); transform: translateX(4px); }
+    .big3-item.completed { opacity: 0.5; text-decoration: line-through; }
+    .big3-checkbox {
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      border: 2px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.3s;
+      flex-shrink: 0;
+    }
+    .big3-checkbox.completed { background: var(--success); border-color: var(--success); }
+    .big3-checkbox.completed::after { content: '✓'; color: white; font-size: 14px; font-weight: bold; }
+    .big3-priority { width: 4px; height: 36px; border-radius: 2px; flex-shrink: 0; }
+    .big3-priority.urgent { background: var(--urgent); }
+    .big3-priority.normal { background: var(--normal); }
+    .big3-priority.low { background: var(--low); }
+    .big3-title { flex: 1; font-size: 15px; font-weight: 500; }
+    .task-xp { font-size: 11px; color: var(--accent); font-weight: 600; background: var(--accent-bg); padding: 2px 8px; border-radius: 8px; }
+    .progress-section { margin-bottom: 20px; }
+    .progress-header { display: flex; justify-content: space-between; margin-bottom: 10px; font-size: 14px; }
+    .progress-label { color: var(--text-secondary); }
+    .progress-value { font-weight: 600; }
+    .progress-bar { height: 10px; background: var(--bg-secondary); border-radius: 5px; overflow: hidden; }
+    .progress-fill {
+      height: 100%;
+      background: linear-gradient(90deg, var(--gradient-start), var(--gradient-end));
+      border-radius: 5px;
+      transition: width 0.5s ease;
+    }
+    .progress-fill.complete { background: var(--success); }
+    .stats-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+    .stat-card { background: var(--bg-secondary); border-radius: 14px; padding: 16px; text-align: center; }
+    .stat-value { font-size: 28px; font-weight: 700; font-family: 'JetBrains Mono', monospace; }
+    .stat-label { font-size: 12px; color: var(--text-secondary); margin-top: 4px; }
+    .tasks-section { display: flex; flex-direction: column; gap: 12px; }
+    .tasks-cat { padding: 14px; border-radius: 12px; }
+    .tasks-cat.urgent { background: rgba(239, 68, 68, 0.1); border: 1px solid rgba(239, 68, 68, 0.3); }
+    .tasks-cat.normal { background: rgba(99, 102, 241, 0.1); border: 1px solid rgba(99, 102, 241, 0.3); }
+    .tasks-cat.low { background: rgba(34, 197, 94, 0.1); border: 1px solid rgba(34, 197, 94, 0.3); }
+    .tasks-cat-title { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 8px; }
+    .tasks-cat.urgent .tasks-cat-title { color: #ef4444; }
+    .tasks-cat.normal .tasks-cat-title { color: #6366f1; }
+    .tasks-cat.low .tasks-cat-title { color: #22c55e; }
+    .tasks-list { display: flex; flex-direction: column; gap: 6px; }
+    .task-item { font-size: 13px; padding: 8px; background: rgba(255,255,255,0.05); border-radius: 6px; cursor: pointer; display: flex; justify-content: space-between; }
+    .task-item:hover { background: rgba(255,255,255,0.1); }
+    .task-empty { font-size: 13px; color: var(--text-muted); opacity: 0.5; padding: 8px; }
+    .matrix-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+    .matrix-quadrant { padding: 16px; border-radius: 14px; min-height: 120px; }
+    .matrix-quadrant.q1 { background: var(--urgent-bg); border: 1px solid rgba(239, 68, 68, 0.3); }
+    .matrix-quadrant.q2 { background: var(--normal-bg); border: 1px solid rgba(245, 158, 11, 0.3); }
+    .matrix-quadrant.q3 { background: rgba(99, 102, 241, 0.1); border: 1px solid rgba(99, 102, 241, 0.3); }
+    .matrix-quadrant.q4 { background: var(--low-bg); border: 1px solid rgba(34, 197, 94, 0.3); }
+    .matrix-label { font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 10px; opacity: 0.8; }
+    .q1 .matrix-label { color: var(--urgent); }
+    .q2 .matrix-label { color: var(--normal); }
+    .q3 .matrix-label { color: var(--accent); }
+    .q4 .matrix-label { color: var(--low); }
+    .matrix-tasks { display: flex; flex-direction: column; gap: 6px; }
+    .matrix-task { font-size: 12px; padding: 6px 8px; background: rgba(0,0,0,0.2); border-radius: 6px; cursor: pointer; }
+    .matrix-task:hover { background: rgba(0,0,0,0.4); }
+    .goals-list { display: flex; flex-direction: column; gap: 16px; }
+    .goal-card { background: var(--bg-secondary); border-radius: 14px; padding: 18px; }
+    .goal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
+    .goal-title { font-size: 15px; font-weight: 600; flex: 1; }
+    .goal-delete { opacity: 0; background: none; border: none; color: var(--urgent); cursor: pointer; font-size: 18px; transition: opacity 0.2s; margin-left: 8px; }
+    .goal-card:hover .goal-delete { opacity: 1; }
+    .goal-progress-text { font-size: 13px; color: var(--text-secondary); font-family: 'JetBrains Mono', monospace; }
+    .milestones { display: flex; flex-wrap: wrap; gap: 8px; }
+    .milestone { font-size: 11px; padding: 4px 10px; border-radius: 12px; background: var(--bg-card); color: var(--text-secondary); }
+    .milestone.completed { background: var(--low-bg); color: var(--low); }
+    .done-list { display: flex; flex-direction: column; gap: 8px; max-height: 300px; overflow-y: auto; }
+    .done-item { display: flex; align-items: center; gap: 10px; padding: 12px; background: var(--bg-secondary); border-radius: 10px; animation: slideIn 0.3s ease; }
+    .habits-list { display: flex; flex-direction: column; gap: 0; max-height: none; overflow-y: visible; }
+    .affirmations-list { display: flex; flex-direction: column; gap: 16px; max-height: 300px; overflow-y: auto; }
+    .habit-dh-header { display: grid; grid-template-columns: 2fr 4fr 1fr 0.8fr 0.8fr; gap: 8px; padding: 10px 12px; background: var(--bg-secondary); border-radius: 10px 10px 0 0; font-size: 11px; font-weight: 600; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.5px; }
+    .habit-dh-h-days { display: flex; justify-content: space-around; }
+    .habit-dh-h-days span { width: 28px; text-align: center; }
+    .habit-dh-row { display: grid; grid-template-columns: 2fr 4fr 1fr 0.8fr 0.8fr; gap: 8px; padding: 12px; border-bottom: 1px solid var(--border); align-items: center; }
+    .habit-dh-row:last-of-type { border-bottom: none; }
+    .habit-dh-action { font-size: 14px; font-weight: 500; }
+    .habit-dh-days { display: flex; justify-content: space-around; }
+    .habit-dh-day { width: 28px; height: 28px; border-radius: 6px; background: var(--bg-secondary); display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 600; cursor: pointer; transition: all 0.2s; border: 1px solid var(--border); }
+    .habit-dh-day:hover { border-color: var(--accent); }
+    .habit-dh-day.completed { background: var(--accent); border-color: var(--accent); color: white; }
+    .habit-dh-day.today { border-color: var(--accent); box-shadow: 0 0 6px var(--accent-glow); }
+    .habit-dh-achieved, .habit-dh-goal { text-align: center; font-size: 14px; font-weight: 600; }
+    .habit-dh-goal { cursor: pointer; }
+    .habit-dh-goal:hover { color: var(--accent); }
+    .habit-dh-net { text-align: center; font-size: 14px; font-weight: 700; }
+    .habit-dh-net.positive { color: var(--low); }
+    .habit-dh-net.negative { color: var(--urgent); }
+    .habit-dh-net.warning { color: #f59e0b; }
+    .habit-dh-net.done { color: var(--low); }
+    .habit-dh-total { display: grid; grid-template-columns: 2fr 4fr 1fr 0.8fr 0.8fr 30px; gap: 8px; padding: 12px; background: var(--bg-secondary); border-radius: 0 0 10px 10px; font-size: 14px; font-weight: 700; border-top: 2px solid var(--border); }
+    .habit-dh-total .habit-dh-net.positive { color: var(--low); }
+    .habit-dh-total .habit-dh-net.negative { color: var(--urgent); }
+    .habit-dh-total .habit-dh-net.warning { color: #f59e0b; }
+    .habit-dh-total .habit-dh-net.done { color: var(--low); }
+    .habit-row { background: var(--bg-secondary); border-radius: 12px; padding: 14px; }
+    .habit-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
+    .habit-title-row { display: flex; align-items: center; gap: 10px; }
+    .habit-name { font-weight: 600; font-size: 14px; }
+    .habit-goal { font-size: 11px; color: var(--text-secondary); background: var(--bg-primary); padding: 2px 8px; border-radius: 8px; }
+    .habit-score { font-size: 12px; font-weight: 600; padding: 2px 8px; border-radius: 8px; }
+    .habit-score.in-rhythm { background: var(--low-bg); color: var(--low); }
+    .habit-score.off-track { background: var(--urgent-bg); color: var(--urgent); }
+    .habit-grid { display: flex; gap: 6px; }
+    .habit-day { width: 32px; height: 32px; border-radius: 8px; background: var(--bg-primary); display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 600; cursor: pointer; transition: all 0.2s; border: 1px solid var(--border); }
+    .habit-day:hover { border-color: var(--accent); }
+    .habit-day.completed { background: var(--accent); border-color: var(--accent); color: white; }
+    .habit-day.today { border-color: var(--accent); box-shadow: 0 0 8px var(--accent-glow); }
+    .habit-delete, .affirmation-delete { opacity: 0; background: none; border: none; color: var(--urgent); cursor: pointer; font-size: 16px; transition: opacity 0.2s; }
+    .habit-item:hover .habit-delete, .affirmation-item:hover .affirmation-delete { opacity: 1; }
+    .btn-small { padding: 4px 10px; font-size: 12px; background: var(--accent); color: white; border: none; border-radius: 6px; cursor: pointer; }
+    .btn-small:hover { opacity: 0.8; }
+    .btn-mic { padding: 8px 12px; font-size: 16px; background: var(--urgent); color: white; border: none; border-radius: 8px; cursor: pointer; }
+    .btn-mic:hover { opacity: 0.8; }
+    .btn-mic.recording { animation: pulse 1s infinite; background: var(--urgent); }
+    .btn-start { background: var(--success); }
+    .affirmation-flow-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--bg-primary); z-index: 300; flex-direction: column; align-items: center; justify-content: center; padding: 40px; text-align: center; }
+    .affirmation-flow-overlay.active { display: flex; }
+    .affirmation-progress { font-size: 18px; color: var(--text-secondary); margin-bottom: 40px; }
+    .affirmation-big { font-size: 48px; font-weight: 700; line-height: 1.3; max-width: 900px; animation: fadeIn 0.5s ease; }
+    .affirmation-click-hint { margin-top: 60px; font-size: 14px; color: var(--text-muted); animation: pulse 2s infinite; }
+    .affirmation-complete { text-align: center; }
+    .affirmation-complete-title { font-size: 42px; font-weight: 700; color: var(--success); margin-bottom: 20px; animation: bounce 0.6s ease; }
+    .affirmation-complete-points { font-size: 28px; color: var(--accent); margin-bottom: 30px; }
+    .affirmation-complete-btn { padding: 16px 32px; font-size: 18px; background: var(--accent); color: white; border: none; border-radius: 12px; cursor: pointer; }
+    .kt-manifest-card .kt-manifest-info { display: flex; flex-direction: column; gap: 8px; }
+    .kt-manifest-card .kt-step { padding: 10px 14px; background: var(--bg-secondary); border-radius: 8px; font-size: 13px; font-weight: 500; border-left: 3px solid var(--urgent); }
+    .manifestation-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: linear-gradient(135deg, #1a0a0a 0%, #2d1010 50%, #1a0a0a 100%); z-index: 300; flex-direction: column; align-items: center; justify-content: center; padding: 40px; text-align: center; }
+    .manifestation-overlay.active { display: flex; }
+    .manifestation-step { font-size: 14px; text-transform: uppercase; letter-spacing: 3px; color: var(--urgent); margin-bottom: 20px; font-weight: 600; }
+    .manifestation-title { font-size: 36px; font-weight: 700; line-height: 1.3; max-width: 800px; margin-bottom: 30px; animation: fadeIn 0.5s ease; }
+    .manifestation-desc { font-size: 18px; color: var(--text-secondary); max-width: 600px; line-height: 1.6; margin-bottom: 40px; }
+    .manifestation-timer { font-size: 72px; font-weight: 700; color: var(--accent); font-family: 'JetBrains Mono', monospace; margin-bottom: 20px; }
+    .manifestation-timer-label { font-size: 14px; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 2px; }
+    .manifestation-complete { text-align: center; }
+    .manifestation-complete-title { font-size: 48px; font-weight: 700; margin-bottom: 20px; animation: bounce 0.6s ease; }
+    .manifestation-complete-sub { font-size: 20px; color: var(--text-secondary); margin-bottom: 30px; }
+    .manifestation-nav { margin-top: 30px; }
+    .manifestation-nav button { padding: 14px 32px; font-size: 16px; background: var(--urgent); color: white; border: none; border-radius: 10px; cursor: pointer; font-weight: 600; transition: transform 0.2s; }
+    .manifestation-nav button:hover { transform: scale(1.05); }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+    @keyframes pulse { 0%, 100% { opacity: 0.5; } 50% { opacity: 1; } }
+    @keyframes bounce { 0% { transform: scale(0.5); } 50% { transform: scale(1.1); } 100% { transform: scale(1); } }
+    @keyframes confetti-fall { 0% { transform: translateY(-100vh) rotate(0deg); opacity: 1; } 100% { transform: translateY(100vh) rotate(720deg); opacity: 0; } }
+    .moon-info { display: flex; flex-direction: column; gap: 12px; }
+    .moon-phase { display: flex; align-items: center; gap: 12px; padding: 12px; background: var(--bg-secondary); border-radius: 10px; }
+    .moon-icon { font-size: 28px; }
+    .moon-details { flex: 1; }
+    .moon-phase-name { font-weight: 600; font-size: 14px; }
+    .moon-date { font-size: 12px; color: var(--text-secondary); }
+    .moon-countdown { text-align: right; }
+    .moon-days { font-size: 16px; font-weight: 600; color: var(--accent); }
+    .moon-label { font-size: 11px; color: var(--text-secondary); }
+    .dreams-list { display: flex; flex-direction: column; gap: 10px; max-height: 200px; overflow-y: auto; }
+    .dream-item { display: flex; align-items: flex-start; gap: 10px; padding: 12px; background: var(--bg-secondary); border-radius: 10px; }
+    .dream-icon { font-size: 20px; }
+    .dream-content { flex: 1; }
+    .dream-text { font-size: 13px; line-height: 1.4; cursor: text; }
+    .dream-text:hover { text-decoration: underline; }
+    .dream-delete { opacity: 0; background: none; border: none; color: var(--urgent); cursor: pointer; font-size: 16px; }
+    .btn-interpret { background: none; border: none; cursor: pointer; font-size: 16px; opacity: 0.6; }
+    .btn-interpret:hover { opacity: 1; }
+    .dream-item:hover .dream-delete { opacity: 1; }
+    .journal-list { display: flex; flex-direction: column; gap: 10px; max-height: 200px; overflow-y: auto; }
+    .journal-item { display: flex; align-items: flex-start; gap: 12px; padding: 12px; background: var(--bg-secondary); border-radius: 10px; cursor: pointer; }
+    .journal-item:hover { background: var(--bg-hover); }
+    .journal-icon { font-size: 20px; }
+    .journal-content { flex: 1; }
+    .journal-text { font-size: 13px; line-height: 1.4; cursor: text; }
+    .journal-text:hover { text-decoration: underline; }
+    .journal-text.full { white-space: pre-wrap; }
+    .journal-delete { opacity: 0; background: none; border: none; color: var(--urgent); cursor: pointer; font-size: 16px; }
+    .journal-item:hover .journal-delete { opacity: 1; }
+    .journal-date { font-size: 11px; color: var(--text-muted); margin-top: 4px; }
+    .news-list { display: flex; flex-direction: column; gap: 12px; max-height: 400px; overflow-y: auto; }
+    .news-item { display: flex; gap: 12px; padding: 12px; background: var(--bg-secondary); border-radius: 10px; transition: background 0.2s; cursor: pointer; }
+    .news-item:hover { background: var(--bg-hover); }
+    .news-item.read { opacity: 0.6; }
+    .news-tag { display: inline-block; padding: 2px 6px; border-radius: 4px; font-size: 9px; font-weight: 600; text-transform: uppercase; margin-left: 6px; }
+    .news-tag.read { background: var(--bg-primary); color: var(--text-secondary); }
+    .news-rating { display: flex; align-items: center; gap: 4px; margin-top: 6px; }
+    .news-rating-num { font-size: 10px; color: var(--text-muted); cursor: pointer; padding: 2px 4px; border-radius: 3px; }
+    .news-rating-num:hover { background: var(--accent); color: white; }
+    .news-rating-num.active { background: var(--accent); color: white; }
+    .news-settings { padding: 16px; background: var(--bg-secondary); border-radius: 10px; margin-bottom: 12px; }
+    .news-settings .form-group { margin-bottom: 12px; }
+    .news-settings label { display: block; font-size: 12px; color: var(--text-secondary); margin-bottom: 6px; }
+    .news-settings input[type="text"] { width: 100%; padding: 8px 12px; background: var(--bg-primary); border: 1px solid var(--border); border-radius: 8px; color: var(--text-primary); font-size: 13px; }
+    .news-topics { display: flex; flex-wrap: wrap; gap: 8px; }
+    .news-topics label { display: flex; align-items: center; gap: 4px; font-size: 12px; color: var(--text-primary); cursor: pointer; }
+    .news-priority { width: 4px; border-radius: 2px; flex-shrink: 0; }
+    .news-priority.urgent { background: var(--urgent); }
+    .news-priority.important { background: var(--normal); }
+    .news-priority.interesting { background: var(--accent); }
+    .news-content { flex: 1; }
+    .news-title { font-size: 13px; font-weight: 600; line-height: 1.3; margin-bottom: 4px; }
+    .news-meta { display: flex; gap: 8px; font-size: 11px; color: var(--text-muted); }
+    .news-source { color: var(--accent); }
+    .news-updated { font-size: 11px; color: var(--text-muted); }
+    @keyframes slideIn { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: translateY(0); } }
+    .done-check { color: var(--success); font-size: 18px; }
+    .done-title { flex: 1; font-size: 14px; color: var(--text-secondary); }
+    .done-time { font-size: 11px; color: var(--text-muted); }
+    #confetti-canvas { position: fixed; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 1000; }
+    .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.7); z-index: 200; align-items: center; justify-content: center; }
+    .modal-overlay.active { display: flex; z-index: 300; }
+    .modal { background: var(--bg-card); border: 1px solid var(--border); border-radius: 20px; padding: 32px; width: 100%; max-width: 500px; margin: 20px; }
+    .modal h2 { font-size: 20px; margin-bottom: 20px; }
+    .modal-actions { display: flex; gap: 12px; margin-top: 24px; }
+    .btn-secondary { background: var(--bg-secondary); color: var(--text-primary); border: 1px solid var(--border); }
+    .priority-select { display: flex; gap: 12px; margin-bottom: 20px; }
+    .priority-option { flex: 1; padding: 12px; border: 2px solid var(--border); border-radius: 12px; text-align: center; cursor: pointer; transition: all 0.2s; }
+    .priority-option:hover { border-color: var(--text-muted); }
+    .priority-option.selected { border-color: var(--accent); background: rgba(99, 102, 241, 0.1); }
+    .priority-dot { width: 12px; height: 12px; border-radius: 50%; display: inline-block; margin-right: 8px; }
+    .empty-state { text-align: center; padding: 32px; color: var(--text-muted); }
+    .empty-icon { font-size: 40px; margin-bottom: 12px; }
+    .keyboard-hint { position: fixed; bottom: 20px; right: 20px; display: flex; gap: 8px; font-size: 12px; color: var(--text-muted); }
+    kbd { padding: 4px 8px; background: var(--bg-card); border: 1px solid var(--border); border-radius: 6px; font-family: 'JetBrains Mono', monospace; }
+    @media (max-width: 1200px) { .main { grid-template-columns: 1fr; } .right-column { display: grid; grid-template-columns: 1fr 1fr; } }
+    @media (max-width: 768px) { .right-column { grid-template-columns: 1fr; } .header { padding: 16px; } .main { padding: 16px; } }
+  
+    .community-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+    .community-card { background: var(--bg-secondary); border-radius: 14px; padding: 16px; }
+    .community-card h3 { font-size: 14px; margin-bottom: 12px; color: var(--accent); }
+    .leaderboard-item { display: flex; justify-content: space-between; padding: 8px; border-bottom: 1px solid var(--border); font-size: 13px; }
+    .leaderboard-item:first-child { font-weight: bold; color: gold; }
+    .activity-item { display: flex; align-items: center; gap: 8px; padding: 6px; font-size: 12px; }
+    .activity-dot { width: 8px; height: 8px; border-radius: 50%; }
+    .activity-dot.active { background: var(--success); }
+    .activity-dot.inactive { background: var(--urgent); }
+    .vacation-toggle { display: flex; align-items: center; gap: 8px; margin-top: 12px; font-size: 12px; }
+    .admin-btn { background: var(--urgent); color: white; border: none; padding: 4px 8px; border-radius: 4px; font-size: 11px; cursor: pointer; }
+    @media (max-width: 768px) { .community-grid { grid-template-columns: 1fr; } }
+
+</style>
+<script src="dream_dictionary.js"></script>
+<script src="dream_interpret.js"></script>
+<script src="music_system_b.js"></script>
+</head>
+<body>
+  <div id="auth-screen">
+    <div class="auth-card">
+      <div class="auth-logo">
+        <h1>⚡ Command Center</h1>
+        <p>Welcome back, David</p>
+      </div>
+      <form id="login-form">
+        <div class="form-group">
+          <label>Email</label>
+          <input type="email" id="email" placeholder="your@email.com" required>
+        </div>
+        <div class="form-group">
+          <label>Password</label>
+          <input type="password" id="password" placeholder="••••••••" required>
+        </div>
+        <button type="button" class="btn btn-primary" onclick="var pw=document.getElementById('password').value; var storedPw=localStorage.getItem('davidCommandCenter_password'); if(!storedPw)storedPw='solfaia2026'; if(pw===storedPw){isLoggedIn=true;localStorage.setItem('davidCommandCenter_loggedIn','true');document.getElementById('auth-screen').style.display='none';document.getElementById('dashboard').style.display='block';loadData().then(function(){render()})}else{alert('Incorrect password')}">Enter Command Center</button><script>
+  var pw = document.getElementById('password').value;
+  var storedPw = localStorage.getItem('davidCommandCenter_password');
+  if (!storedPw) storedPw = 'solfaia2026';
+  if (pw === storedPw) {
+    isLoggedIn = true;
+    localStorage.setItem('davidCommandCenter_loggedIn', 'true');
+    setMyEmail(data.user?.name || 'User'); 
+    document.getElementById('auth-screen').style.display = 'none';
+    updateCommunityOnLogin();
+    document.getElementById('dashboard').style.display = 'block';
+    loadData().then(function() { render(); });
+  } else { alert('Incorrect password'); }
+}
+</script>
+      </form>
+    </div>
+  </div>
+  <div id="dashboard">
+    <header class="header">
+      <div class="header-left">
+        <div class="avatar-display" id="avatar-display" onclick="renameAvatar()">
+          <div class="avatar-emoji" id="avatar-emoji">🥚</div>
+          <div class="avatar-info">
+            <div class="avatar-level">Lvl <span id="level-count">1</span> <span id="level-title">Seed</span></div>
+            <div class="avatar-xp"><span id="xp-count">0</span> XP <span style="color: var(--text-muted); font-size: 9px;">/ <span id="xp-next">1000</span></span></div>
+            <div class="xp-bar"><div class="xp-fill" id="xp-fill" style="width: 0%"></div></div>
+          </div>
+        </div>
+        <div class="logo">⚡ David OS</div>
+        <div class="streak-badge" id="streak-badge">
+          <span>🔥</span>
+          <span id="streak-count">0</span> day streak
+        </div>
+        <div class="moon-badge" id="moon-badge" onclick="scrollToMoon()">
+          <span id="moon-emoji">🌙</span>
+          <span id="moon-countdown">--</span>
+        </div>
+      </div>
+      <div class="header-right">
+        <div class="quick-add" onclick="showChangePassword()">
+          <span>🔐</span> Password
+        </div>
+        <div class="quick-add" onclick="openModal()">
+          <span>+</span> Add Task
+        </div>
+        <button class="btn-logout" onclick="logout()">Logout</button>
+      </div>
+    </header>
+    <main class="main">
+      <div class="left-column">
+        <div class="moon-hero" id="moon-hero" onclick="toggleMoonExpand()">
+          <div class="moon-hero-content">
+            <div class="moon-hero-icon" id="moon-hero-icon">🌙</div>
+            <div class="moon-hero-info">
+              <div class="moon-hero-phase" id="moon-hero-phase">Waxing Crescent</div>
+              <div class="moon-hero-dates" id="moon-hero-dates">Next: Mar 19 | Full: Apr 01</div>
+            </div>
+          </div>
+          <div class="moon-hero-countdowns" id="moon-hero-countdowns"></div>
+          <div class="moon-hero-full" id="moon-hero-full"></div>
+        </div>
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title">
+              🎯 Today's Big 3
+              <span class="card-count" id="big3-count">0/3</span>
+            </div>
+          </div>
+          <div class="progress-section">
+            <div class="progress-header">
+              <span class="progress-label">Daily Progress</span>
+              <span class="progress-value" id="daily-progress">0%</span>
+            </div>
+            <div class="progress-bar">
+              <div class="progress-fill" id="daily-progress-fill" style="width: 0%"></div>
+            </div>
+          </div>
+          <div class="big3-list" id="big3-list"></div>
+        </div>
+        <div class="card kt-manifest-card">
+          <div class="card-header">
+            <div class="card-title">🔥 KT Manifestation <span class="section-points">+75 pts</span></div>
+            <button class="btn-small btn-start" onclick="startManifestation()">▶ Start</button>
+          </div>
+          <div class="kt-manifest-info">
+            <div class="kt-step">1. Get Angry</div>
+            <div class="kt-step">2. I Must Have It</div>
+            <div class="kt-step">3. Feel Good / Visualize</div>
+            <div class="kt-step">4. Let Go</div>
+            <div class="kt-step">5. Smile / 67s Timer</div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title">📋 Tasks</div>
+          </div>
+          <div class="tasks-section">
+            <div class="tasks-cat urgent">
+              <div class="tasks-cat-title">🔥 CRITICAL</div>
+              <div class="tasks-list" id="tasks-critical"></div>
+            </div>
+            <div class="tasks-cat normal">
+              <div class="tasks-cat-title">⚡ NORMAL</div>
+              <div class="tasks-list" id="tasks-normal"></div>
+            </div>
+            <div class="tasks-cat low">
+              <div class="tasks-cat-title">💤 LOW</div>
+              <div class="tasks-list" id="tasks-low"></div>
+            </div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title">🏆 Goals</div>
+            <button class="btn-small" onclick="suggestGoalsFromTasks()">✨ Suggest</button>
+          </div>
+          <div class="goals-list" id="goals-list"></div>
+        </div>
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title">🔄 Weekly Habits <span class="section-points">+10/day</span></div>
+            <button class="btn-small" onclick="openHabitModal()">+ Add</button>
+          </div>
+          <div class="habits-list" id="habits-list"></div>
+        </div>
+        
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title">🌐 Community</div>
+            <button class="btn-small" id="vacation-btn" onclick="toggleVacation()">🏖️ Vacation</button>
+          </div>
+          <div class="community-grid">
+            <div class="community-card">
+              <h3>🏆 Leaderboard</h3>
+              <div id="leaderboard"></div>
+            </div>
+            <div class="community-card">
+              <h3>⚡ Activity</h3>
+              <div id="activity-board"></div>
+            </div>
+          </div>
+        </div>
+<div class="card">
+          <div class="card-header">
+            <div class="card-title">📰 AI & Tech News <span class="section-points">+5 read / +3 rate</span></div>
+            <div style="display: flex; align-items: center; gap: 8px;">
+              <span class="news-updated" id="news-updated"></span>
+              <button class="btn-small" onclick="toggleNewsSettings()">⚙️</button>
+            </div>
+          </div>
+          <div class="news-settings" id="news-settings" style="display: none;">
+            <div class="form-group">
+              <label>X Handles to follow (comma separated)</label>
+              <input type="text" id="news-handles" placeholder="e.g., steipete, peterdiamandis, alexwg" value="">
+            </div>
+            <div class="form-group">
+              <label>Topics</label>
+              <div class="news-topics">
+                <label><input type="checkbox" id="topic-ai" checked> AI</label>
+                <label><input type="checkbox" id="topic-robotics"> Robotics</label>
+                <label><input type="checkbox" id="topic-medicine"> Medicine</label>
+                <label><input type="checkbox" id="topic-crypto"> Crypto</label>
+                <label><input type="checkbox" id="topic-space"> Space</label>
+                <label><input type="checkbox" id="topic-dubai"> Dubai</label>
+              </div>
+            </div>
+            <button class="btn btn-primary" onclick="saveNewsSettings()">Save Settings</button>
+          </div>
+          <div class="news-list" id="news-list"></div>
+        </div>
+      </div>
+      <div class="right-column">
+        <div class="card avatar-hero-card">
+          <div style="text-align: center; padding: 20px; position: relative;">
+            <button onclick="showLevelInfo()" style="position: absolute; top: 10px; right: 10px; background: none; border: none; font-size: 18px; cursor: pointer; opacity: 0.5;">ℹ️</button>
+            <div class="avatar-hero-emoji" id="avatar-hero-emoji" onclick="renameAvatar()">🥚</div>
+            <div class="avatar-hero-name" id="avatar-hero-name" onclick="renameAvatar()">Your Avatar</div>
+            <div class="avatar-hero-level">Level <span id="hero-level">1</span> <span id="hero-title">Seed</span></div>
+            <div class="avatar-hero-xp"><span id="hero-xp">0</span> / <span id="hero-xp-next">1000</span> XP</div>
+            <div class="xp-bar" style="width: 80%; margin: 12px auto;"><div class="xp-fill" id="hero-xp-fill" style="width: 0%"></div></div>
+            <div style="font-size: 11px; color: var(--text-muted); margin-top: 8px;">Click emoji to rename</div>
+          </div>
+        </div>
+        <div class="level-info-overlay" id="level-info-overlay" style="display: none;"></div>
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title">📅 Calendar</div>
+            <button class="btn-small" onclick="toggleCalendar()">📆</button>
+          </div>
+          <div class="calendar-grid" id="calendar-grid"></div>
+          <div class="calendar-day-details" id="calendar-day-details" style="display: none;"></div>
+        </div>
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title">📅 Today</div>
+            <button class="btn-small" onclick="shareProgress()">📤 Share</button>
+          </div>
+          <div class="stats-grid" style="grid-template-columns: 1fr 1fr 1fr;">
+            <div class="stat-card">
+              <div class="stat-value" id="stat-today-tasks">0</div>
+              <div class="stat-label">Tasks Done</div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-value" id="stat-today-xp">0</div>
+              <div class="stat-label">XP Earned</div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-value" id="stat-today-habits">0/0</div>
+              <div class="stat-label">Habits</div>
+            </div>
+          </div>
+          <div class="stats-grid" style="grid-template-columns: 1fr 1fr; margin-top: 10px;">
+            <div class="stat-card" id="today-manifest-card">
+              <div class="stat-value" id="today-manifest">❌</div>
+              <div class="stat-label">KT Manifest</div>
+            </div>
+            <div class="stat-card" id="today-affirm-card">
+              <div class="stat-value" id="today-affirm">❌</div>
+              <div class="stat-label">Affirmations</div>
+            </div>
+          </div>
+          <div class="today-list" id="today-list" style="margin-top: 12px; max-height: 150px; overflow-y: auto;"></div>
+        </div>
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title">📈 This Week</div>
+          </div>
+          <div class="stats-grid" style="grid-template-columns: 1fr 1fr 1fr;">
+            <div class="stat-card">
+              <div class="stat-value" id="stat-week">0</div>
+              <div class="stat-label">Tasks Done</div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-value" id="stat-week-xp">0</div>
+              <div class="stat-label">XP Earned</div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-value" id="stat-pending">0</div>
+              <div class="stat-label">Pending</div>
+            </div>
+          </div>
+          <div class="stats-grid" style="grid-template-columns: 1fr; margin-top: 10px;">
+            <div class="stat-card">
+              <div class="stat-value" id="stat-streak">0</div>
+              <div class="stat-label">🔥 Day Streak</div>
+            </div>
+          </div>
+          <div class="progress-section" style="margin-top: 20px;">
+            <div class="progress-header">
+              <span class="progress-label" onclick="editWeeklyGoal()" style="cursor: pointer;">Weekly Goal (click to edit)</span>
+              <span class="progress-value" id="weekly-progress">0/20</span>
+            </div>
+            <div class="progress-bar">
+              <div class="progress-fill" id="weekly-progress-fill" style="width: 0%"></div>
+            </div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title">✅ Done This Week</div>
+          </div>
+          <div class="done-list" id="done-list"></div>
+        </div>
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title">⚡ Quick Actions</div>
+          </div>
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px;">
+            <button class="btn-small" onclick="openModal()" style="padding: 12px;">+ Task</button>
+            <button class="btn-small" onclick="openHabitModal()">+ Habit</button>
+            <button class="btn-small btn-start" onclick="startAffirmationFlow()">▶ Affirm</button>
+            <button class="btn-small" onclick="openDreamModal()">💭 Dream</button>
+            <button class="btn-small" onclick="openJournalModal()" style="grid-column: span 2;">📓 Journal</button>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title">💬 Affirmations <span class="section-points">+50 pts</span></div>
+            <div style="display: flex; gap: 8px;">
+              <button class="btn-small btn-start" onclick="startAffirmationFlow()">▶ Start</button>
+              <button class="btn-small" onclick="openAffirmationModal()">+ Add</button>
+            </div>
+          </div>
+          <div class="affirmations-list" id="affirmations-list"></div>
+        </div>
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title">🌙 Moon Cycles</div>
+          </div>
+          <div class="moon-info" id="moon-info"></div>
+        </div>
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title">💭 Dreams <span class="section-points">+20 pts</span></div>
+            <button class="btn-small" onclick="openDreamModal()">+ Add</button>
+          </div>
+          <div class="dreams-list" id="dreams-list"></div>
+        </div>
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title">📓 Daily Journal <span class="section-points">+15 pts</span></div>
+            <button class="btn-small" onclick="openJournalModal()">+ Add</button>
+          </div>
+          <div class="journal-list" id="journal-list"></div>
+        </div>
+      </div>
+    </main>
+  </div>
+  <div class="modal-overlay" id="modal">
+    <div class="modal">
+      <h2>Add New Task</h2>
+      <div class="form-group">
+        <label>What needs to be done?</label>
+        <input type="text" id="new-task-title" placeholder="Task description...">
+      </div>
+      <div class="form-group">
+        <label>Priority</label>
+        <div class="priority-select">
+          <div class="priority-option selected" data-priority="urgent" onclick="selectPriority('urgent')">
+            <span class="priority-dot" style="background: var(--urgent)"></span>Urgent
+          </div>
+          <div class="priority-option" data-priority="normal" onclick="selectPriority('normal')">
+            <span class="priority-dot" style="background: var(--normal)"></span>Normal
+          </div>
+          <div class="priority-option" data-priority="low" onclick="selectPriority('low')">
+            <span class="priority-dot" style="background: var(--low)"></span>Low
+          </div>
+        </div>
+      </div>
+      <div class="form-group">
+        <label>Category</label>
+        <select id="new-task-category">
+          <option value="personal">Personal</option>
+          <option value="solfaia">Solfaia</option>
+        </select>
+      </div>
+      <div class="modal-actions">
+        <button class="btn btn-secondary" onclick="closeModal()">Cancel</button>
+        <button class="btn btn-primary" onclick="addTask()">Add Task</button>
+      </div>
+    </div>
+  </div>
+  <div class="modal-overlay" id="habit-modal">
+    <div class="modal">
+      <h2 id="habit-modal-title">Add Habit</h2>
+      <div class="form-group">
+        <label>Habit name</label>
+        <input type="text" id="habit-title-input" placeholder="e.g., Morning run">
+      </div>
+      <div class="form-group">
+        <label>Weekly goal (times per week)</label>
+        <select id="habit-weekly-goal">
+          <option value="1">1x per week</option>
+          <option value="2">2x per week</option>
+          <option value="3">3x per week</option>
+          <option value="4">4x per week</option>
+          <option value="5" selected>5x per week</option>
+          <option value="6">6x per week</option>
+          <option value="7">7x per week (daily)</option>
+        </select>
+      </div>
+      <div class="modal-actions">
+        <button class="btn btn-secondary" onclick="closeHabitModal()">Cancel</button>
+        <button class="btn btn-primary" onclick="saveHabit()">Save</button>
+      </div>
+    </div>
+  </div>
+  <div class="modal-overlay" id="affirmation-modal">
+    <div class="modal">
+      <h2 id="affirmation-modal-title">Add Affirmation</h2>
+      <div class="form-group">
+        <label>Affirmation</label>
+        <input type="text" id="affirmation-text-input" placeholder="e.g., I am capable of achieving anything">
+      </div>
+      <div class="modal-actions">
+        <button class="btn btn-secondary" onclick="closeAffirmationModal()">Cancel</button>
+        <button class="btn btn-primary" onclick="saveAffirmation()">Save</button>
+      </div>
+    </div>
+  </div>
+  <div class="modal-overlay" id="dream-modal">
+    <div class="modal">
+      <h2>Add Dream</h2>
+      <div class="form-group">
+        <label>What did you dream about?</label>
+        <div style="display: flex; gap: 8px;">
+          <textarea id="dream-text-input" rows="4" placeholder="Describe your dream..." style="flex: 1; width: 100%; padding: 12px; background: var(--bg-primary); border: 1px solid var(--border); border-radius: 8px; color: var(--text-primary); font-size: 14px; font-family: inherit; resize: vertical;"></textarea>
+          <button class="btn-mic" onclick="startDictation('dream')" title="Click to speak" style="height: auto; align-self: flex-start;">🎤</button>
+        </div>
+      </div>
+      <div class="modal-actions">
+        <button class="btn btn-secondary" onclick="closeDreamModal()">Cancel</button>
+        <button class="btn btn-primary" onclick="saveDream()">Save</button>
+      </div>
+    </div>
+  </div>
+  <div class="modal-overlay" id="journal-modal">
+    <div class="modal">
+      <h2>Daily Journal</h2>
+      <div class="form-group">
+        <label>What's on your mind?</label>
+        <div style="display: flex; gap: 8px;">
+          <textarea id="journal-text-input" rows="6" placeholder="Write your thoughts..." style="flex: 1; padding: 12px; background: var(--bg-primary); border: 1px solid var(--border); border-radius: 8px; color: var(--text-primary); font-size: 14px; font-family: inherit; resize: vertical;"></textarea>
+          <button class="btn-mic" onclick="startDictation('journal')" title="Click to speak" style="height: auto; align-self: flex-start;">🎤</button>
+        </div>
+      </div>
+      <div class="modal-actions">
+        <button class="btn btn-secondary" onclick="closeJournalModal()">Cancel</button>
+        <button class="btn btn-primary" onclick="saveJournal()">Save</button>
+      </div>
+    </div>
+  </div>
+  <div class="affirmation-flow-overlay" id="affirmation-flow" onclick="advanceAffirmation()">
+    <div class="affirmation-progress" id="affirmation-progress">1/3</div>
+    <div class="affirmation-big" id="affirmation-big">I am capable of achieving anything</div>
+    <div class="affirmation-click-hint">Click anywhere to continue</div>
+  </div>
+  <div class="manifestation-overlay" id="manifestation-flow">
+    <div class="manifestation-step" id="manifestation-step">Step 1 of 5</div>
+    <div class="manifestation-title" id="manifestation-title">Get Angry</div>
+    <div class="manifestation-desc" id="manifestation-desc">Think about what you don't have. What have others done to you? How dare they. Get angry about it.</div>
+    <div class="manifestation-timer" id="manifestation-timer" style="display: none;">67</div>
+    <div class="manifestation-timer-label" id="manifestation-timer-label" style="display: none;">seconds of feeling</div>
+    <div class="manifestation-nav">
+      <button id="manifestation-btn" onclick="nextManifestationStep()">Next Step →</button>
+    </div>
+  </div>
+  <canvas id="confetti-canvas"></canvas>
+  <script>
+  // Password system
+function getUserPassword() { return localStorage.getItem("davidCommandCenter_password"); }
+function setUserPassword(pw) { localStorage.setItem("davidCommandCenter_password", pw); }
+function hasPassword() { return !!getUserPassword(); }
+function showSetupPassword() { document.getElementById("auth-screen").innerHTML = `<div class="auth-card"><div class="auth-logo"><h1>Welcome!</h1><p>Set your password</p></div><form id="setup-form"><div class="form-group"><label>Password</label><input type="password" id="new-password" required minlength="4"></div><div class="form-group"><label>Confirm</label><input type="password" id="confirm-password" required></div><button type="submit" class="btn btn-primary">Set Password</button></form></div>`; document.getElementById("setup-form").addEventListener("submit", function(e) { e.preventDefault(); var pw = document.getElementById("new-password").value; var cpw = document.getElementById("confirm-password").value; if(pw !== cpw) { alert("Passwords dont match"); return; } setUserPassword(pw); data = {user:{name:"David",streak:0,totalCompleted:0,weeklyGoal:20},tasks:[],goals:[],habits:[],affirmations:[],affirmationState:{},dreams:[],journal:[],news:[],dreamInterpretations:[]}; saveData(); isLoggedIn = true; localStorage.setItem("davidCommandCenter_loggedIn", "true"); render(); }); }
+function showChangePassword() { document.getElementById("auth-screen").innerHTML = `<div class="auth-card"><h2>Change Password</h2><form id="change-form"><div class="form-group"><label>Current</label><input type="password" id="curr-pw" required></div><div class="form-group"><label>New</label><input type="password" id="new-pw" required minlength="4"></div><div class="form-group"><label>Confirm</label><input type="password" id="conf-pw" required></div><button type="submit" class="btn btn-primary">Change</button><button type="button" class="btn" onclick="render()">Cancel</button></form></div>`; document.getElementById("change-form").addEventListener("submit", function(e) { e.preventDefault(); var curr = document.getElementById("curr-pw").value; var npw = document.getElementById("new-pw").value; var cpw = document.getElementById("conf-pw").value; if(curr !== getUserPassword()) { alert("Wrong password"); return; } if(npw !== cpw) { alert("New passwords dont match"); return; } setUserPassword(npw); alert("Password changed!"); render(); }); }
+</script>
+  <script>
+    let currentUserEmail = '';
+function setMyEmail(email) { currentUserEmail = email; localStorage.setItem('currentUserEmail', email); }
+function getMyEmail() { return currentUserEmail || localStorage.getItem('currentUserEmail') || 'guest'; }
+
+let data = { user: { name: 'David', streak: 0, lastCompletedDate: null, totalCompleted: 0, weeklyGoal: 20, weeklyCompleted: 0, affirmationPoints: 0, xp: 0, level: 1, avatarStage: 'egg' }, tasks: [], goals: [], habits: [], affirmations: [], doneLog: [], inbox: [], dreams: [], journal: [], news: [], moonData: {}, newsConfig: {} };
+    function loadData() {
+      // Try Gist first (for cross-device sync)
+      syncFromGist().then(synced => {
+        if (synced) { gistSynced = true; render(); return; }
+        // Fall back to localStorage
+        const saved = localStorage.getItem('davidCommandCenter');
+        if (saved) { data = JSON.parse(saved); gistSynced = true; render(); }
+        else {
+          // Fall back to data.json
+          fetch('data.json').then(res => res.json()).then(serverData => { data = serverData; saveData(); gistSynced = true; render(); }).catch(() => { gistSynced = true; render(); });
+        }
+      });
+    }
+    function getLevelFromXP(xp) {
+      // Easier early levels: 0, 500, 1200, 2000, 3000, then normal
+      if (xp < 500) return 1;
+      if (xp < 1200) return 2;
+      if (xp < 2000) return 3;
+      if (xp < 3000) return 4;
+      return Math.min(33, 5 + Math.floor((xp - 3000) / 1000));
+    }
+    function getXPForLevel(level) {
+      if (level <= 1) return 0;
+      if (level === 2) return 500;
+      if (level === 3) return 1200;
+      if (level === 4) return 2000;
+      if (level === 5) return 3000;
+      return 3000 + (level - 5) * 1000;
+    }
+    function getAvatarStage(level) {
+      if (level < 5) return 'egg';
+      if (level < 10) return 'baby';
+      if (level < 20) return 'teen';
+      return 'adult';
+    }
+    function getAvatarEmoji(stage) {
+      const emojis = { egg: '🥚', baby: '🐣', teen: '✨', adult: '💪', legendary: '👑' };
+      return emojis[stage] || '🥚';
+    }
+    function getLevelTitle(level) {
+      const titles = { 1: 'Seed', 2: 'Sprout', 3: 'Sprouting', 4: 'Rooted', 5: 'Hatching', 10: 'Teen', 15: 'Strong', 20: 'Adult', 25: 'Master', 30: 'Legend', 33: 'Ultimate' };
+      for (let l = 33; l >= 1; l--) { if (level >= l && titles[l]) return titles[l]; }
+      return 'Seed';
+    }
+    function addXP(amount) {
+      if (!data.user) data.user = {};
+      if (data.user.xp === undefined) data.user.xp = 0;
+      const oldLevel = data.user.level || 1;
+      data.user.xp += amount;
+      data.user.level = getLevelFromXP(data.user.xp);
+      const newStage = getAvatarStage(data.user.level);
+      if (data.user.avatarStage !== newStage) {
+        data.user.avatarStage = newStage;
+        // Evolution!
+        alert('🎉 EVOLUTION! Your avatar is now ' + getLevelTitle(data.user.level) + ' level! ' + getAvatarEmoji(newStage));
+      }
+      saveData();
+      return data.user.level;
+    }
+    function renameAvatar() {
+      if (!data.user) data.user = {};
+      const newName = prompt('Name your avatar:', data.user.avatarName || 'David');
+      if (newName) {
+        data.user.avatarName = newName;
+        saveData();
+        render();
+      }
+    }
+    function getProgressToNextLevel() {
+      const currentLevel = data.user?.level || 1;
+      const currentXP = data.user?.xp || 0;
+      const xpForCurrent = getXPForLevel(currentLevel);
+      const xpForNext = getXPForLevel(currentLevel + 1);
+      const progress = (currentXP - xpForCurrent) / (xpForNext - xpForCurrent) * 100;
+      return Math.min(100, Math.max(0, progress));
+    }
+    function saveData() { 
+      localStorage.setItem('davidCommandCenter', JSON.stringify(data)); 
+      // Sync to Gist
+      if (gistSynced) {
+        fetch('https://api.github.com/gists/' + GIST_ID, {
+          method: 'PATCH',
+          headers: { 'Authorization': 'token ' + GIST_TOKEN, 'Content-Type': 'application/json' },
+          body: JSON.stringify({ files: { 'data.json': { content: JSON.stringify(data, null, 2) } } })
+        }).catch(e => console.log('Gist sync error:', e));
+      }
+    }
+    async function syncFromGist() {
+      try {
+        const res = await fetch('https://api.github.com/gists/' + GIST_ID, {
+          headers: { 'Authorization': 'token ' + GIST_TOKEN }
+        });
+        const gist = await res.json();
+        if (gist.files && gist.files['data.json']) {
+          const gistData = JSON.parse(gist.files['data.json'].content);
+          // Merge: keep local data but prefer gist data
+          if (gistData && Object.keys(gistData).length > 0) {
+            data = { ...data, ...gistData };
+            localStorage.setItem('davidCommandCenter', JSON.stringify(data));
+            return true;
+          }
+        }
+      } catch (e) { console.log('Gist load error:', e); }
+      return false;
+    }
+    // Credentials - encoded for basic obfuscation
+    const CREDENTIALS = { email: 'david@solfaia.com', password: 'solfaia2026' };
+    const GIST_ID = '22aa3ff8e548f54a43bb10e833d4e76b';
+    const GIST_TOKEN = '';
+
+// Community Gist - shared across all community members
+const COMMUNITY_GIST_ID = 'c0mmun1tyd4shb04rd4t4'; // TODO: Create community gist
+const IS_COMMUNITY = true; // Set to true for community version
+
+function getCommunityData() {
+  const cached = localStorage.getItem('communityData');
+  return cached ? JSON.parse(cached) : null;
+}
+function saveCommunityData(communityData) {
+  localStorage.setItem('communityData', JSON.stringify(communityData));
+  // TODO: Sync to community gist
+}
+function isOnVacation() {
+  const data = getCommunityData() || {};
+  const user = data[data.user?.email] || {};
+  return user.vacation || false;
+}
+function toggleVacation() {
+  if (!confirm('🏖️ Toggle vacation mode? (Up to 3 weeks, pauses inactivity kick)')) return;
+  const email = document.getElementById('email').value;
+  let data = getCommunityData() || {};
+  if (!data[email]) data[email] = {};
+  data[email].vacation = !data[email].vacation;
+  data[email].vacationStart = data[email].vacation ? new Date().toISOString() : null;
+  saveCommunityData(data);
+  alert('Vacation ' + (data[email].vacation ? 'enabled! 🏖️' : 'disabled!'));
+  renderCommunity();
+}
+
+// Community v3 enhancements
+function getMyRank() {
+  const data = getCommunityData();
+  const myEmail = getMyEmail();
+  const members = Object.entries(data).filter(([k,v]) => v.xp).sort((a,b) => (b[1].xp||0) - (a[1].xp||0));
+  const idx = members.findIndex(([e]) => e === myEmail);
+  return idx >= 0 ? idx + 1 : null;
+}
+function showMyStats() {
+  const email = getMyEmail() || data.user?.email;
+  if (!email) return '<div style="font-size:12px;padding:10px;text-align:center;color:var(--text-secondary)">Login to see your stats</div>';
+  const data = getCommunityData()[email] || {};
+  const rank = getMyRank();
+  return '<div style="background:var(--accent);color:white;padding:12px;border-radius:10px;margin-bottom:12px;font-size:12px;"><div style="font-weight:bold;font-size:16px;">Your Stats</div><div style="display:flex;justify-content:space-between;margin-top:8px;"><div>🏆 Rank</div><div>#' + (rank || '-') + '</div></div><div style="display:flex;justify-content:space-between;"><div>⭐ XP</div><div>' + (data.xp || 0) + '</div></div><div style="display:flex;justify-content:space-between;"><div>📊 Level</div><div>' + (data.level || 1) + '</div></div><div style="display:flex;justify-content:space-between;"><div>✅ Today</div><div>' + (data.tasksToday || 0) + ' tasks</div></div><div style="display:flex;justify-content:space-between;"><div>🔥 Streak</div><div>' + (data.streak || 0) + ' days</div></div></div>';
+}
+function renderCommunity() {
+  const data = getCommunityData();
+  const myEmail = getMyEmail();
+  const members = Object.entries(data).filter(([k,v]) => v.xp).sort((a,b) => (b[1].xp||0) - (a[1].xp||0));
+  
+  // Leaderboard with tasks today
+  let lbHtml = showMyStats();
+  lbHtml += members.slice(0,10).map(([email, u], i) => {
+    const isMe = email === myEmail;
+    const isAdmin = email === ADMIN_EMAIL;
+    const style = isMe ? 'background:var(--accent);color:white;padding:6px;border-radius:6px;margin:2px 0;' : 'padding:6px;';
+    return '<div class="leaderboard-item" style="' + style + '"><span>' + (i+1) + '. ' + (u.name || email.split('@')[0]) + (isAdmin ? ' 👑' : '') + '</span><span style="text-align:right"><span style="color:var(--accent)">L' + (u.level||1) + '</span> • ' + (u.xp||0) + ' XP</span></div>';
+  }).join('');
+  if (members.length === 0) lbHtml += '<div style="opacity:0.5;text-align:center;padding:20px;">No community members yet!<br>Invite friends to join!</div>';
+  document.getElementById('leaderboard').innerHTML = lbHtml;
+
+function renderCommunity() {
+  // Render leaderboard
+  const data = getCommunityData() || {};
+  const members = Object.entries(data).filter(([k,v]) => v.xp).sort((a,b) => (b[1].xp||0) - (a[1].xp||0));
+  let lbHtml = members.slice(0,10).map(([email, u], i) => 
+    '<div class="leaderboard-item"><span>' + (i+1) + '. ' + (u.name || email.split('@')[0]) + '</span><span>L' + (u.level||1) + ' • ' + (u.xp||0) + ' XP</span></div>'
+  ).join('') || '<div style="opacity:0.5">No members yet</div>';
+  document.getElementById('leaderboard').innerHTML = lbHtml;
+  
+  // Activity board
+  const active = members.filter(([e,u]) => u.lastActive && (Date.now() - new Date(u.lastActive).getTime()) < 86400000*3);
+  const inactive = members.filter(([e,u]) => !u.lastActive || (Date.now() - new Date(u.lastActive).getTime()) >= 86400000*3);
+  let actHtml = '<div style="margin-bottom:8px;color:var(--success)">🟢 Active (' + active.length + ')</div>';
+  active.slice(0,5).forEach(([e,u]) => {
+    actHtml += '<div class="activity-item"><span class="activity-dot active"></span>' + (u.name||e.split('@')[0]) + ' - ' + (u.lastActive ? new Date(u.lastActive).toLocaleDateString() : 'Never') + '</div>';
+  });
+  actHtml += '<div style="margin:8px 0;color:var(--urgent)">🔴 Inactive (' + inactive.length + ')</div>';
+  inactive.slice(0,5).forEach(([e,u]) => {
+    actHtml += '<div class="activity-item"><span class="activity-dot inactive"></span>' + (u.name||e.split('@')[0]) + '</div>';
+  });
+  document.getElementById('activity-board').innerHTML = actHtml;
+  
+  // Update vacation button
+  const vacBtn = document.getElementById('vacation-btn');
+  if (isOnVacation()) {
+    vacBtn.style.background = 'var(--success)';
+    vacBtn.innerHTML = '🏖️ On Vacation';
+  }
+}
+function updateCommunityOnLogin() {
+  // Update user stats in community when logging in
+  const email = document.getElementById('email')?.value || data.user?.name;
+  let community = getCommunityData() || {};
+  community[email] = {
+    name: data.user?.name || 'User',
+    xp: data.user?.xp || 0,
+    level: data.user?.level || 1,
+    tasksToday: data.doneLog?.filter(d => d.date === new Date().toISOString().split('T')[0]).length || 0,
+    lastActive: new Date().toISOString(),
+    vacation: community[email]?.vacation || false
+  };
+  saveCommunityData(community);
+  renderCommunity();
+}
+
+    let gistSynced = false;
+    let isLoggedIn = localStorage.getItem('davidCommandCenter_loggedIn') === 'true';
+      var pw = document.getElementById('password').value;
+      var storedPw = getUserPassword(); if (!storedPw) storedPw = 'solfaia2026';
+      if (pw === storedPw) {
+        isLoggedIn = true;
+        localStorage.setItem('davidCommandCenter_loggedIn', 'true');
+        setMyEmail(data.user?.name || 'User'); document.getElementById('auth-screen').style.display = 'none';
+        updateCommunityOnLogin();
+        document.getElementById('dashboard').style.display = 'block';
+        loadData().then(function() { render(); });
+      } else { alert('Incorrect password'); }
+    }
+    document.getElementById('login-form').addEventListener('submit', function(e) {
+      e.preventDefault();
+      const password = document.getElementById('password').value;
+      var storedPw = getUserPassword(); if (!storedPw) storedPw = 'solfaia2026'; if (password === storedPw) {
+        isLoggedIn = true;
+        localStorage.setItem('davidCommandCenter_loggedIn', 'true');
+        setMyEmail(data.user?.name || 'User'); document.getElementById('auth-screen').style.display = 'none';
+        updateCommunityOnLogin();
+        document.getElementById('dashboard').style.display = 'block';
+        loadData().then(() => render());
+      } else { alert('Incorrect password'); }
+    });
+    // Auto-login if previously logged in
+    if (isLoggedIn) {
+      setMyEmail(data.user?.name || 'User'); document.getElementById('auth-screen').style.display = 'none';
+        updateCommunityOnLogin();
+      document.getElementById('dashboard').style.display = 'block';
+      loadData();
+    }
+    function logout() {
+      isLoggedIn = false;
+      localStorage.setItem('davidCommandCenter_loggedIn', 'false');
+      document.getElementById('dashboard').style.display = 'none';
+      document.getElementById('auth-screen').style.display = 'flex';
+      document.getElementById('email').value = '';
+      document.getElementById('password').value = '';
+    }
+    function render() {
+      renderCommunity();
+
+      if(!hasPassword() && !isLoggedIn) { showSetupPassword(); return; }
+      renderBig3();
+      renderMatrix();
+      renderGoals();
+      renderDoneLog();
+      renderStats();
+      renderCalendar();
+      renderHabits();
+      renderAffirmations();
+      renderMoon();
+      renderDreams();
+      renderInterpretations();
+      renderJournal();
+      renderNews();
+    }
+    function renderBig3() {
+      const pending = data.tasks.filter(t => t.status === 'pending');
+      const big3 = pending.slice(0, 3);
+      const container = document.getElementById('big3-list');
+      if (big3.length === 0) { container.innerHTML = '<div class="empty-state"><div class="empty-icon">🎉</div>All done! Add more tasks.</div>'; return; }
+      const xpMap = { urgent: 25, normal: 15, low: 10 };
+      container.innerHTML = big3.map(task => '<div class="big3-item" onclick="toggleTask(\'' + task.id + '\')"><div class="big3-checkbox ' + (task.status === 'completed' ? 'completed' : '') + '"></div><div class="big3-priority ' + task.priority + '"></div><div class="big3-title">' + task.title + '</div><div class="task-xp">+' + (xpMap[task.priority] || 10) + ' XP</div></div>').join('');
+      document.getElementById('big3-count').textContent = big3.filter(t => t.status === 'completed').length + '/3';
+      const completed = big3.filter(t => t.status === 'completed').length;
+      const progress = Math.round((completed / 3) * 100);
+      document.getElementById('daily-progress').textContent = progress + '%';
+      document.getElementById('daily-progress-fill').style.width = progress + '%';
+      if (completed === 3) { document.getElementById('daily-progress-fill').classList.add('complete'); fireConfetti(); }
+    }
+    function renderMatrix() {
+      const pending = data.tasks.filter(t => t.status === 'pending');
+      const critical = pending.filter(t => t.priority === 'urgent');
+      const normal = pending.filter(t => t.priority === 'normal');
+      const low = pending.filter(t => t.priority === 'low');
+      const xpMap = { urgent: 25, normal: 15, low: 10 };
+      document.getElementById('tasks-critical').innerHTML = critical.length ? critical.map(t => '<div class="task-item" onclick="toggleTask(\'' + t.id + '\')">' + t.title + ' <span class="task-xp">+' + xpMap[t.priority] + '</span></div>').join('') : '<div class="task-empty">—</div>';
+      document.getElementById('tasks-normal').innerHTML = normal.length ? normal.map(t => '<div class="task-item" onclick="toggleTask(\'' + t.id + '\')">' + t.title + ' <span class="task-xp">+' + xpMap[t.priority] + '</span></div>').join('') : '<div class="task-empty">—</div>';
+      document.getElementById('tasks-low').innerHTML = low.length ? low.map(t => '<div class="task-item" onclick="toggleTask(\'' + t.id + '\')">' + t.title + ' <span class="task-xp">+' + xpMap[t.priority] + '</span></div>').join('') : '<div class="task-empty">—</div>';
+    }
+    function renderGoals() {
+      const container = document.getElementById('goals-list');
+      container.innerHTML = data.goals.map(goal => '<div class="goal-card"><div class="goal-header"><div class="goal-title">' + goal.title + '</div><div class="goal-progress-text">' + goal.completedMilestones.length + '/' + goal.milestones.length + '</div><button class="goal-delete" onclick="deleteGoal(\'' + goal.id + '\')">×</button></div><div class="progress-bar" style="margin-bottom: 12px;"><div class="progress-fill" style="width: ' + (goal.completedMilestones.length / goal.milestones.length * 100) + '%"></div></div><div class="milestones">' + goal.milestones.map((m,i) => '<div class="milestone ' + (goal.completedMilestones.includes(i) ? 'completed' : '') + '">' + m + '</div>').join('') + '</div></div>').join('');
+    }
+    function deleteGoal(id) {
+      if (confirm('Are you sure you want to delete this goal? This cannot be undone.')) {
+        data.goals = data.goals.filter(g => g.id !== id);
+        saveData();
+        render();
+      }
+    }
+    function suggestGoalsFromTasks() {
+      const pending = data.tasks.filter(t => t.status === 'pending');
+      if (pending.length < 3) { alert('Add more tasks first to get suggestions!'); return; }
+      
+      // Simple keyword-based grouping
+      const categories = {};
+      pending.forEach(task => {
+        const t = task.title.toLowerCase();
+        let cat = 'Other';
+        if (t.includes('car') || t.includes('sell') || t.includes('buy')) cat = 'Car';
+        else if (t.includes('solfaia') || t.includes('website') || t.includes('db') || t.includes('vector')) cat = 'Solfaia';
+        else if (t.includes('passport') || t.includes('embassy') || t.includes('luxembourg')) cat = 'Legal';
+        else if (t.includes('email') || t.includes('refund')) cat = 'Admin';
+        
+        if (!categories[cat]) categories[cat] = [];
+        categories[cat].push(task.title);
+      });
+      
+      // Show suggestions
+      let msg = 'I found these potential goals:\n\n';
+      for (const [cat, tasks] of Object.entries(categories)) {
+        if (tasks.length >= 2 && cat !== 'Other') {
+          msg += '🏆 ' + cat + ' Goal:\n';
+          tasks.forEach(t => msg += '  • ' + t + '\n');
+          msg += '\n';
+        }
+      }
+      
+      if (msg === 'I found these potential goals:\n\n') {
+        msg += 'Not enough patterns found yet. Keep adding more related tasks!';
+      }
+      
+      msg += '\nWant me to create these as goals?';
+      if (confirm(msg)) {
+        for (const [cat, tasks] of Object.entries(categories)) {
+          if (tasks.length >= 2 && cat !== 'Other') {
+            data.goals.push({
+              id: 'g' + Date.now() + Math.random(),
+              title: cat + ' Goal',
+              progress: 0,
+              milestones: tasks,
+              completedMilestones: []
+            });
+          }
+        }
+        saveData();
+        render();
+        alert('Goals created! Check the Goals section.');
+      }
+    }
+    function renderDoneLog() {
+      const container = document.getElementById('done-list');
+      const doneThisWeek = data.doneLog.slice(0, 10);
+      if (doneThisWeek.length === 0) { container.innerHTML = '<div class="empty-state">No completed tasks yet</div>'; return; }
+      container.innerHTML = doneThisWeek.map(item => '<div class="done-item"><span class="done-check">✓</span><span class="done-title">' + item.title + '</span><span class="done-time">' + item.completedAt + '</span></div>').join('');
+    }
+    function renderStats() {
+      const completed = data.tasks.filter(t => t.status === 'completed').length;
+      const pending = data.tasks.filter(t => t.status === 'pending').length;
+      
+      // Weekly stats
+      document.getElementById('stat-week').textContent = data.user.weeklyCompleted;
+      document.getElementById('stat-pending').textContent = pending;
+      document.getElementById('stat-streak').textContent = data.user.streak;
+      const weeklyPercent = Math.round((data.user.weeklyCompleted / data.user.weeklyGoal) * 100);
+      document.getElementById('weekly-progress').textContent = data.user.weeklyCompleted + '/' + data.user.weeklyGoal;
+      document.getElementById('weekly-progress-fill').style.width = weeklyPercent + '%';
+      document.getElementById('streak-count').textContent = data.user.streak;
+      
+      // Calculate XP this week
+      const xpMap = { urgent: 25, normal: 15, low: 10 };
+      let weekXP = 0;
+      data.doneLog.forEach(d => {
+        const task = data.tasks.find(t => t.id === d.id);
+        if (task) weekXP += xpMap[task.priority] || 10;
+      });
+      document.getElementById('stat-week-xp').textContent = weekXP;
+      
+      // Today's stats
+      const today = new Date().toISOString().split('T')[0];
+      const todayStr = new Date().toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' });
+      const todayDone = data.doneLog.filter(d => d.completedAt === todayStr);
+      let todayXP = 0;
+      todayDone.forEach(d => {
+        const task = data.tasks.find(t => t.id === d.id);
+        if (task) todayXP += xpMap[task.priority] || 10;
+      });
+      document.getElementById('stat-today-tasks').textContent = todayDone.length;
+      document.getElementById('stat-today-xp').textContent = todayXP;
+      
+      // Today's habits
+      const todayDay = new Date().getDay();
+      const startOfWeek = new Date();
+      startOfWeek.setDate(startOfWeek.getDate() - (todayDay === 0 ? 6 : todayDay - 1));
+      const todayStrISO = new Date().toISOString().split('T')[0];
+      let todayHabitsDone = 0;
+      if (data.habits) {
+        data.habits.forEach(h => {
+          if (h.completedDates && h.completedDates.includes(todayStrISO)) todayHabitsDone++;
+        });
+      }
+      const totalHabits = data.habits ? data.habits.length : 0;
+      document.getElementById('stat-today-habits').textContent = todayHabitsDone + '/' + totalHabits;
+      
+      // Today's manifestation & affirmations (from localStorage)
+      const lastManifest = localStorage.getItem('davidCommandCenter_lastManifest');
+      const lastAffirm = localStorage.getItem('davidCommandCenter_lastAffirm');
+      const todayDate = new Date().toDateString();
+      
+      document.getElementById('today-manifest').textContent = (lastManifest === todayDate) ? '✅ +75' : '❌';
+      document.getElementById('today-manifest').style.color = (lastManifest === todayDate) ? 'var(--low)' : 'var(--urgent)';
+      document.getElementById('today-affirm').textContent = (lastAffirm === todayDate) ? '✅ +50' : '❌';
+      document.getElementById('today-affirm').style.color = (lastAffirm === todayDate) ? 'var(--low)' : 'var(--urgent)';
+      
+      // Today's list
+      const todayListEl = document.getElementById('today-list');
+      if (todayDone.length === 0) {
+        todayListEl.innerHTML = '<div style="font-size: 12px; color: var(--text-muted); text-align: center; padding: 10px;">No tasks completed today yet</div>';
+      } else {
+        todayListEl.innerHTML = todayDone.map(d => '<div class="done-item" style="padding: 8px; font-size: 12px;"><span class="done-check">✓</span><span class="done-title">' + d.title + '</span></div>').join('');
+      }
+      
+      // Update header avatar
+      const level = data.user.level || 1;
+      const xp = data.user.xp || 0;
+      document.getElementById('avatar-emoji').textContent = getAvatarEmoji(getAvatarStage(level));
+      document.getElementById('level-count').textContent = level;
+      document.getElementById('level-title').textContent = getLevelTitle(level);
+      document.getElementById('xp-count').textContent = xp;
+      document.getElementById('xp-next').textContent = level < 33 ? getXPForLevel(level + 1) : 'MAX';
+      document.getElementById('xp-fill').style.width = getProgressToNextLevel() + '%';
+      
+      // Update hero avatar
+      document.getElementById('avatar-hero-emoji').textContent = getAvatarEmoji(getAvatarStage(level));
+      document.getElementById('avatar-hero-name').textContent = data.user.avatarName || 'Your Avatar';
+      document.getElementById('hero-level').textContent = level;
+      document.getElementById('hero-title').textContent = getLevelTitle(level);
+      document.getElementById('hero-xp').textContent = xp;
+      document.getElementById('hero-xp-next').textContent = level < 33 ? getXPForLevel(level + 1) : 'MAX';
+      document.getElementById('hero-xp-fill').style.width = getProgressToNextLevel() + '%';
+    }
+    function editWeeklyGoal() {
+      const newGoal = prompt('Set your weekly goal (tasks to complete):', data.user.weeklyGoal || 20);
+      if (newGoal && !isNaN(newGoal) && parseInt(newGoal) > 0) {
+        data.user.weeklyGoal = parseInt(newGoal);
+        saveData();
+        render();
+      }
+    }
+    function renderCalendar() {
+      const container = document.getElementById('calendar-grid');
+      const now = new Date();
+      const year = now.getFullYear();
+      const month = now.getMonth();
+      const firstDay = new Date(year, month, 1).getDay();
+      const daysInMonth = new Date(year, month + 1, 0).getDate();
+      const today = now.getDate();
+      
+      const dayNames = ['S', 'M', 'T', 'W', 'T', 'F', 'S'];
+      let html = dayNames.map(d => '<div class="calendar-header">' + d + '</div>').join('');
+      
+      // Empty cells for days before first
+      for (let i = 0; i < (firstDay === 0 ? 6 : firstDay - 1); i++) {
+        html += '<div></div>';
+      }
+      
+      // Calculate XP per day for this month
+      const xpPerDay = {};
+      const xpMap = { urgent: 25, normal: 15, low: 10 };
+      data.doneLog.forEach(d => {
+        if (d.completedAt) {
+          const task = data.tasks.find(t => t.id === d.id);
+          const pts = task ? (xpMap[task.priority] || 10) : 10;
+          if (!xpPerDay[d.completedAt]) xpPerDay[d.completedAt] = 0;
+          xpPerDay[d.completedAt] += pts;
+        }
+      });
+      
+      for (let day = 1; day <= daysInMonth; day++) {
+        const dateStr = new Date(year, month, day).toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' });
+        const isoStr = year + '-' + String(month+1).padStart(2,'0') + '-' + String(day).padStart(2,'0');
+        const xp = xpPerDay[dateStr] || 0;
+        const isToday = day === today;
+        
+        let dotClass = '';
+        if (xp > 0) {
+          if (xp >= 50) dotClass = 'high';
+          else if (xp >= 25) dotClass = 'medium';
+          else dotClass = 'low';
+        }
+        
+        html += '<div class="calendar-day' + (isToday ? ' today' : '') + (xp > 0 ? ' has-data' : '') + '" onclick="showDayDetails(\'' + dateStr + '\', ' + day + ')">' + day + (dotClass ? '<div class="calendar-dot ' + dotClass + '"></div>' : '') + '</div>';
+      }
+      
+      container.innerHTML = html;
+    }
+    function showDayDetails(dateStr, day) {
+      const detailsEl = document.getElementById('calendar-day-details');
+      detailsEl.style.display = 'block';
+      
+      // Find tasks done that day
+      const tasksDone = data.doneLog.filter(d => d.completedAt === dateStr);
+      const xpMap = { urgent: 25, normal: 15, low: 10 };
+      let dayXP = 0;
+      tasksDone.forEach(d => {
+        const task = data.tasks.find(t => t.id === d.id);
+        if (task) dayXP += xpMap[task.priority] || 10;
+      });
+      
+      // Find journal entries
+      const journalEntries = (data.journal || []).filter(j => j.date && j.date.includes(dateStr.split(',')[0]));
+      
+      // Find dreams
+      const dreams = (data.dreams || []).filter(d => d.date && d.date.includes(dateStr.split(',')[0]));
+      
+      let html = '<div class="calendar-day-title">' + dateStr + '</div>';
+      html += '<div class="calendar-day-stat">✅ Tasks: ' + tasksDone.length + ' (+' + dayXP + ' XP)</div>';
+      if (journalEntries.length > 0) {
+        html += '<div class="calendar-day-stat">📓 Journal: ' + journalEntries.length + ' entry(s)</div>';
+      }
+      if (dreams.length > 0) {
+        html += '<div class="calendar-day-stat">💭 Dreams: ' + dreams.length + '</div>';
+      }
+      if (tasksDone.length === 0 && journalEntries.length === 0 && dreams.length === 0) {
+        html += '<div class="calendar-day-stat" style="color: var(--text-muted);">No activity recorded</div>';
+      }
+      
+      detailsEl.innerHTML = html;
+    }
+    function toggleCalendar() {
+      const el = document.getElementById('calendar-day-details');
+      el.style.display = el.style.display === 'none' ? 'block' : 'none';
+    }
+    function shareProgress() {
+      const today = new Date().toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' });
+      const todayDone = data.doneLog.filter(d => d.completedAt === today);
+      const xpMap = { urgent: 25, normal: 15, low: 10 };
+      let todayXP = 0;
+      todayDone.forEach(d => {
+        const task = data.tasks.find(t => t.id === d.id);
+        if (task) todayXP += xpMap[task.priority] || 10;
+      });
+      
+      const level = data.user.level || 1;
+      const xp = data.user.xp || 0;
+      const avatarName = data.user.avatarName || 'My Avatar';
+      
+      // Check manifest & affirm
+      const todayDate = new Date().toDateString();
+      const lastManifest = localStorage.getItem('davidCommandCenter_lastManifest');
+      const lastAffirm = localStorage.getItem('davidCommandCenter_lastAffirm');
+      const manifestDone = lastManifest === todayDate;
+      const affirmDone = lastAffirm === todayDate;
+      
+      // Habits today
+      const todayStrISO = new Date().toISOString().split('T')[0];
+      let todayHabitsDone = 0;
+      if (data.habits) {
+        data.habits.forEach(h => {
+          if (h.completedDates && h.completedDates.includes(todayStrISO)) todayHabitsDone++;
+        });
+      }
+      
+      const shareText = `🎯 ${today}\n\n🔥 ${avatarName} - Level ${level} (${getLevelTitle(level)})\n⭐ ${xp} XP\n📧 david@solfaia.com\n\n✅ Tasks: ${todayDone.length}\n💪 Habits: ${todayHabitsDone}/${data.habits ? data.habits.length : 0}\n${manifestDone ? '🔥' : '❌'} KT Manifestation: ${manifestDone ? 'Done (+75 XP)' : 'Not done'}\n${affirmDone ? '✨' : '❌'} Affirmations: ${affirmDone ? 'Done (+50 XP)' : 'Not done'}`;
+      
+      const choice = confirm('Click OK for image (copy to clipboard for social), Cancel for plain text.');
+      
+      if (choice) {
+        // Create an image using canvas
+        const canvas = document.createElement('canvas');
+        canvas.width = 600;
+        canvas.height = 400;
+        const ctx = canvas.getContext('2d');
+        
+        // Background
+        const gradient = ctx.createLinearGradient(0, 0, 600, 400);
+        gradient.addColorStop(0, '#1a1a2e');
+        gradient.addColorStop(1, '#16213e');
+        ctx.fillStyle = gradient;
+        ctx.fillRect(0, 0, 600, 400);
+        
+        // Title
+        ctx.fillStyle = '#6366f1';
+        ctx.font = 'bold 28px sans-serif';
+        ctx.fillText(today, 30, 50);
+        
+        // Avatar
+        ctx.font = '60px sans-serif';
+        ctx.fillText(getAvatarEmoji(getAvatarStage(level)), 30, 120);
+        
+        // Stats
+        ctx.fillStyle = '#ffffff';
+        ctx.font = 'bold 20px sans-serif';
+        ctx.fillText(`${avatarName} - Level ${level} (${getLevelTitle(level)})`, 110, 100);
+        
+        ctx.fillStyle = '#8b5cf6';
+        ctx.font = '18px sans-serif';
+        ctx.fillText(`${xp} XP`, 110, 130);
+        
+        ctx.fillStyle = '#a0a0a0';
+        ctx.font = '14px sans-serif';
+        ctx.fillText('david@solfaia.com', 110, 155);
+        
+        // Stats grid
+        ctx.fillStyle = '#ffffff';
+        ctx.font = '16px sans-serif';
+        ctx.fillText(`✅ Tasks: ${todayDone.length}`, 30, 210);
+        ctx.fillText(`💪 Habits: ${todayHabitsDone}/${data.habits ? data.habits.length : 0}`, 30, 240);
+        
+        ctx.fillText(`${manifestDone ? '🔥' : '❌'} Manifest: ${manifestDone ? 'Done' : 'Not done'}`, 300, 210);
+        ctx.fillText(`${affirmDone ? '✨' : '❌'} Affirm: ${affirmDone ? 'Done' : 'Not done'}`, 300, 240);
+        
+        // Footer
+        ctx.fillStyle = '#404060';
+        ctx.font = '12px sans-serif';
+        ctx.fillText('Generated by David OS', 30, 380);
+        
+        canvas.toBlob(blob => {
+          const item = new ClipboardItem({ 'image/png': blob });
+          navigator.clipboard.write([item]).then(() => {
+            alert('Image copied to clipboard! You can paste it in social media.');
+          }).catch(() => {
+            // Fallback to text
+            navigator.clipboard.writeText(shareText);
+            alert('Could not copy image. Text copied instead!');
+          });
+        });
+      } else {
+        // Plain text
+        navigator.clipboard.writeText(shareText).then(() => {
+          alert('Progress copied to clipboard!');
+        }).catch(() => {
+          alert('Could not copy. Here is your progress:\n\n' + shareText);
+        });
+      }
+    }
+    function renderHabits() {
+      const container = document.getElementById('habits-list');
+      if (!data.habits || data.habits.length === 0) {
+        container.innerHTML = '<div class="empty-state">No habits yet. Add one!</div>';
+        return;
+      }
+      const days = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+      const today = new Date();
+      const todayDay = today.getDay();
+      const todayStr = today.toISOString().split('T')[0];
+      // Get start of week (Monday)
+      const startOfWeek = new Date(today);
+      startOfWeek.setDate(today.getDate() - (todayDay === 0 ? 6 : todayDay - 1));
+      
+      let totalAchieved = 0, totalGoal = 0;
+      
+      let rows = data.habits.map(habit => {
+        // Calculate this week's completions
+        let weekCompletions = 0;
+        if (habit.completedDates) {
+          for (let i = 0; i < 7; i++) {
+            const d = new Date(startOfWeek);
+            d.setDate(d.getDate() + i);
+            const dateStr = d.toISOString().split('T')[0];
+            if (habit.completedDates.includes(dateStr)) weekCompletions++;
+          }
+        }
+        totalAchieved += weekCompletions;
+        const goal = habit.weeklyGoal || 7;
+        totalGoal += goal;
+        const net = weekCompletions - goal;
+        
+        // Net color: -3 or less = red, -2/-1 = orange, 0 = green checkmark, positive = green
+        let netClass = 'negative';
+        let netText = net;
+        if (net >= 1) netClass = 'positive';
+        else if (net === 0) { netClass = 'done'; netText = '✓'; }
+        else if (net >= -1) netClass = 'warning';
+        
+        let dayCells = '';
+        for (let i = 0; i < 7; i++) {
+          const d = new Date(startOfWeek);
+          d.setDate(d.getDate() + i);
+          const dateStr = d.toISOString().split('T')[0];
+          const isCompleted = habit.completedDates && habit.completedDates.includes(dateStr);
+          const isToday = dateStr === todayStr;
+          dayCells += '<div class="habit-dh-day ' + (isCompleted ? 'completed' : '') + (isToday ? ' today' : '') + '" onclick="toggleHabitDay(\'' + habit.id + '\', \'' + dateStr + '\')">' + (isCompleted ? '✓' : days[i].substr(0,1)) + '</div>';
+        }
+        
+        return '<div class="habit-dh-row"><div class="habit-dh-action" onclick="editHabit(\'' + habit.id + '\')">' + habit.title + '</div><div class="habit-dh-days">' + dayCells + '</div><div class="habit-dh-achieved">' + weekCompletions + '</div><div class="habit-dh-goal" onclick="editHabitGoal(\'' + habit.id + '\')">' + goal + '</div><div class="habit-dh-net ' + netClass + '">' + netText + '</div><button class="habit-delete" onclick="deleteHabit(\'' + habit.id + '\')">×</button></div>';
+      }).join('');
+      
+      const totalNet = totalAchieved - totalGoal;
+      let totalNetClass = 'negative';
+      let totalNetText = totalNet;
+      if (totalNet >= 1) totalNetClass = 'positive';
+      else if (totalNet === 0) { totalNetClass = 'done'; totalNetText = '✓'; }
+      else if (totalNet >= -1) totalNetClass = 'warning';
+      
+      container.innerHTML = '<div class="habit-dh-header"><div class="habit-dh-h-action">Behavior / Action</div><div class="habit-dh-h-days"><span>Mon</span><span>Tue</span><span>Wed</span><span>Thu</span><span>Fri</span><span>Sat</span><span>Sun</span></div><div class="habit-dh-h-achieved">Achieved</div><div class="habit-dh-h-goal">Goal</div><div class="habit-dh-h-net">Net</div></div>' + rows + '<div class="habit-dh-total"><div class="habit-dh-action">TOTAL</div><div class="habit-dh-days"></div><div class="habit-dh-achieved">' + totalAchieved + '</div><div class="habit-dh-goal">' + totalGoal + '</div><div class="habit-dh-net ' + totalNetClass + '">' + totalNetText + '</div></div>';
+    }
+    function editHabitGoal(id) {
+      const habit = data.habits.find(h => h.id === id);
+      if (!habit) return;
+      const newGoal = prompt('Set weekly goal for "' + habit.title + '":', habit.weeklyGoal || 7);
+      if (newGoal && !isNaN(newGoal) && parseInt(newGoal) > 0) {
+        habit.weeklyGoal = parseInt(newGoal);
+        saveData();
+        render();
+      }
+    }
+    function toggleHabitDay(habitId, dateStr) {
+      const habit = data.habits.find(h => h.id === habitId);
+      if (!habit) return;
+      if (!habit.completedDates) habit.completedDates = [];
+      if (habit.completedDates.includes(dateStr)) {
+        habit.completedDates = habit.completedDates.filter(d => d !== dateStr);
+      } else {
+        habit.completedDates.push(dateStr);
+        addXP(10); // +10 XP per habit completion
+      }
+      saveData();
+      render();
+    }
+    function deleteHabit(id) {
+      if (confirm('Are you sure you want to delete this habit? This cannot be undone.')) {
+        data.habits = data.habits.filter(h => h.id !== id);
+        saveData();
+        render();
+      }
+    }
+    function editHabit(id) {
+      const habit = data.habits.find(h => h.id === id);
+      if (!habit) return;
+      const newTitle = prompt('Rename habit:', habit.title);
+      if (newTitle && newTitle.trim()) {
+        habit.title = newTitle.trim();
+        saveData();
+        render();
+      }
+    }
+    function renderAffirmations() {
+      const container = document.getElementById('affirmations-list');
+      if (!data.affirmations || data.affirmations.length === 0) {
+        container.innerHTML = '<div class="empty-state">No affirmations yet. Add one!</div>';
+        return;
+      }
+      container.innerHTML = data.affirmations.map((aff, idx) => '<div class="affirmation-item"><div class="affirmation-text">' + aff + '</div><button class="affirmation-delete" onclick="deleteAffirmation(' + idx + ')">×</button></div>').join('');
+    }
+    function renderMoon() {
+      const container = document.getElementById('moon-info');
+      if (!data.moonData) { container.innerHTML = '<div class="empty-state">No moon data</div>'; return; }
+      const moonIcons = { 'New Moon': '🌑', 'Waxing Crescent': '🌒', 'First Quarter': '🌓', 'Waxing Gibbous': '🌔', 'Full Moon': '🌕', 'Waning Gibbous': '🌖', 'Last Quarter': '🌗', 'Waning Crescent': '🌘' };
+      const today = new Date();
+      const nextNew = data.moonData.nextNewMoon ? new Date(data.moonData.nextNewMoon) : null;
+      const nextFull = data.moonData.nextFullMoon ? new Date(data.moonData.nextFullMoon) : null;
+      const daysToNew = nextNew ? Math.ceil((nextNew - today) / (1000 * 60 * 60 * 24)) : null;
+      const daysToFull = nextFull ? Math.ceil((nextFull - today) / (1000 * 60 * 60 * 24)) : null;
+      const currentPhase = data.moonData.currentPhase || 'Waxing Crescent';
+      const icon = moonIcons[currentPhase] || '🌙';
+      function formatEU(date) { if (!date) return '--'; return date.getDate().toString().padStart(2,'0') + '/' + (date.getMonth()+1).toString().padStart(2,'0'); }
+      
+      // Update header badge
+      const nextEvent = (daysToNew !== null && daysToFull !== null) ? (daysToNew < daysToFull ? {type: 'New Moon', days: daysToNew, emoji: '🌑'} : {type: 'Full Moon', days: daysToFull, emoji: '🌕'}) : (daysToNew !== null ? {type: 'New Moon', days: daysToNew, emoji: '🌑'} : {type: 'Full Moon', days: daysToFull, emoji: '🌕'});
+      document.getElementById('moon-emoji').textContent = nextEvent.emoji;
+      document.getElementById('moon-countdown').textContent = nextEvent.days + 'd';
+      
+      // Update hero section
+      document.getElementById('moon-hero-icon').textContent = icon;
+      document.getElementById('moon-hero-phase').textContent = currentPhase;
+      document.getElementById('moon-hero-dates').textContent = 'Next: ' + formatEU(nextNew) + ' | Full: ' + formatEU(nextFull);
+      document.getElementById('moon-hero-countdowns').innerHTML = (daysToNew !== null ? '<div class="moon-countdown-item"><div class="moon-countdown-days">' + daysToNew + '</div><div class="moon-countdown-label">New Moon</div></div>' : '') + (daysToFull !== null ? '<div class="moon-countdown-item"><div class="moon-countdown-days">' + daysToFull + '</div><div class="moon-countdown-label">Full Moon</div></div>' : '');
+      
+      // Build full year view
+      const newMoons = data.moonData.newMoons2026 || [];
+      const fullMoons = data.moonData.fullMoons2026 || [];
+      let newMoonList = '', fullMoonList = '';
+      newMoons.forEach(m => { const d = m.date.split('-'); newMoonList += '<div class="moon-list-item"><span class="moon-list-date">' + d[2] + '/' + d[1] + '</span><span class="moon-list-time">' + (m.time || '--:--') + '</span></div>'; });
+      fullMoons.forEach(m => { const d = m.date.split('-'); fullMoonList += '<div class="moon-list-item"><span class="moon-list-date">' + d[2] + '/' + d[1] + '</span><span class="moon-list-time">' + (m.time || '--:--') + '</span></div>'; });
+      document.getElementById('moon-hero-full').innerHTML = '<div class="moon-full-year"><div class="moon-list"><div class="moon-list-title">🌑 New Moons</div>' + newMoonList + '</div><div class="moon-list"><div class="moon-list-title">🌕 Full Moons</div>' + fullMoonList + '</div></div>';
+      
+      // Update card section
+      container.innerHTML = '<div class="moon-phase"><div class="moon-icon">' + icon + '</div><div class="moon-details"><div class="moon-phase-name">' + currentPhase + '</div><div class="moon-date">Current Phase</div></div></div>' + (daysToNew !== null ? '<div class="moon-phase"><div class="moon-icon">🌑</div><div class="moon-details"><div class="moon-phase-name">New Moon</div><div class="moon-date">' + formatEU(nextNew) + '</div></div><div class="moon-countdown"><div class="moon-days">' + daysToNew + '</div><div class="moon-label">days</div></div></div>' : '') + (daysToFull !== null ? '<div class="moon-phase"><div class="moon-icon">🌕</div><div class="moon-details"><div class="moon-phase-name">Full Moon</div><div class="moon-date">' + formatEU(nextFull) + '</div></div><div class="moon-countdown"><div class="moon-days">' + daysToFull + '</div><div class="moon-label">days</div></div></div>' : '');
+    }
+    function toggleMoonExpand() {
+      document.getElementById('moon-hero').classList.toggle('expanded');
+    }
+    function scrollToMoon() { document.getElementById('moon-hero').scrollIntoView({ behavior: 'smooth' }); }
+    function renderDreams() {
+      const container = document.getElementById('dreams-list');
+      if (!data.dreams || data.dreams.length === 0) {
+        container.innerHTML = '<div class="empty-state">No dreams recorded yet</div>';
+        return;
+      }
+      container.innerHTML = data.dreams.slice(0, 5).map((dream, idx) => '<div class="dream-item"><div class="dream-icon">💭</div><div class="dream-content"><div class="dream-text" onclick="editDreamEntry(' + idx + ')">' + dream.text + '</div><div class="dream-date">' + dream.date + '</div></div><button class="btn-interpret" onclick="interpretDream(' + idx + ')" title="Interpret this dream">🔮</button><button class="dream-delete" onclick="deleteDreamEntry(' + idx + ')">×</button></div>').join('');
+    }
+    function deleteDreamEntry(idx) {
+      if (confirm('Delete this dream?')) {
+        data.dreams.splice(idx, 1);
+        saveData();
+        render();
+      }
+    }
+    function interpretDream(idx) {
+      const dream = data.dreams[idx];
+      const interpretation = analyzeDream(dream.text);
+      alert('💭 Dream: ' + dream.text + '\n\n🔮 Interpretation:\n' + interpretation);
+    }
+    function editDreamEntry(idx) {
+      const entry = data.dreams[idx];
+      const newText = prompt('Edit dream:', entry.text);
+      if (newText && newText.trim()) {
+        entry.text = newText.trim();
+        saveData();
+        render();
+      }
+    }
+    function renderJournal() {
+      const container = document.getElementById('journal-list');
+      if (!data.journal || data.journal.length === 0) {
+        container.innerHTML = '<div class="empty-state">No journal entries yet</div>';
+        return;
+      }
+      container.innerHTML = data.journal.slice(0, 5).map((entry, idx) => '<div class="journal-item"><div class="journal-icon">📓</div><div class="journal-content"><div class="journal-text' + (entry.text.length > 80 ? '' : ' full') + '" onclick="editJournalEntry(' + idx + ')">' + entry.text + '</div><div class="journal-date">' + entry.date + '</div></div><button class="journal-delete" onclick="deleteJournalEntry(' + idx + ')">×</button></div>').join('');
+    }
+    function deleteJournalEntry(idx) {
+      if (confirm('Delete this journal entry?')) {
+        data.journal.splice(idx, 1);
+        saveData();
+        render();
+      }
+    }
+    function editJournalEntry(idx) {
+      const entry = data.journal[idx];
+      const newText = prompt('Edit journal entry:', entry.text);
+      if (newText && newText.trim()) {
+        entry.text = newText.trim();
+        saveData();
+        render();
+      }
+    }
+    let recognition = null;
+    function startDictation(type) {
+      if (!('webkitSpeechRecognition' in window) && !('SpeechRecognition' in window)) {
+        alert('Speech recognition not supported in this browser. Try Chrome or Edge.');
+        return;
+      }
+      
+      const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+      recognition = new SpeechRecognition();
+      recognition.continuous = false;
+      recognition.interimResults = true;
+      
+      const inputEl = document.getElementById(type + '-text-input');
+      const btnEl = document.querySelector('button[onclick="startDictation(\'' + type + '\')"]');
+      
+      btnEl.classList.add('recording');
+      btnEl.textContent = '🛑';
+      
+      recognition.onresult = function(event) {
+        let finalTranscript = '';
+        let interimTranscript = '';
+        
+        for (let i = event.resultIndex; i < event.results.length; i++) {
+          if (event.results[i].isFinal) {
+            finalTranscript += event.results[i][0].transcript;
+          } else {
+            interimTranscript += event.results[i][0].transcript;
+          }
+        }
+        
+        if (finalTranscript) {
+          inputEl.value = (inputEl.value + ' ' + finalTranscript).trim();
+        }
+      };
+      
+      recognition.onerror = function(event) {
+        console.error('Speech recognition error:', event.error);
+        btnEl.classList.remove('recording');
+        btnEl.textContent = '🎤';
+        if (event.error !== 'no-speech') {
+          alert('Speech recognition error: ' + event.error);
+        }
+      };
+      
+      recognition.onend = function() {
+        btnEl.classList.remove('recording');
+        btnEl.textContent = '🎤';
+      };
+      
+      recognition.start();
+    }
+    function toggleJournalExpand(el) {
+      const textEl = el.querySelector('.journal-text');
+      textEl.classList.toggle('full');
+    }
+    function openJournalModal() { 
+      closeDreamModal(); closeModal(); closeHabitModal(); closeAffirmationModal();
+      document.getElementById('journal-modal').classList.add('active'); 
+      setTimeout(() => document.getElementById('journal-text-input').focus(), 100); 
+    }
+    function closeJournalModal() { document.getElementById('journal-modal').classList.remove('active'); }
+    function saveJournal() {
+      const text = document.getElementById('journal-text-input').value.trim();
+      if (!text) return;
+      if (!data.journal) data.journal = [];
+      data.journal.unshift({ id: 'j' + Date.now(), text: text, date: new Date().toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' }) });
+      addXP(15);
+      saveData();
+      closeJournalModal();
+      document.getElementById('journal-text-input').value = '';
+      render();
+    }
+    function renderNews() {
+      const container = document.getElementById('news-list');
+      if (!data.news || data.news.length === 0) {
+        container.innerHTML = '<div class="empty-state">No news yet</div>';
+        return;
+      }
+      container.innerHTML = data.news.slice(0, 10).map((item, idx) => {
+        const isRead = item.read;
+        const rating = item.rating || 0;
+        let ratingHtml = '<div class="news-rating">';
+        for (let r = 1; r <= 10; r++) {
+          ratingHtml += '<span class="news-rating-num' + (r <= rating ? ' active' : '') + '" onclick="event.stopPropagation(); rateNews(' + idx + ', ' + r + ')">' + r + '</span>';
+        }
+        ratingHtml += '</div>';
+        return '<div class="news-item' + (isRead ? ' read' : '') + '" onclick="markNewsRead(' + idx + ')"><div class="news-priority ' + item.priority + '"></div><div class="news-content"><div class="news-title">' + item.title + (isRead ? '<span class="news-tag read">Read</span>' : '') + '</div><div class="news-meta"><span class="news-source">' + item.source + '</span><span>' + item.date + '</span></div>' + ratingHtml + '</div></div>';
+      }).join('');
+      document.getElementById('news-updated').textContent = 'Updated ' + new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
+    }
+    function markNewsRead(idx) {
+      if (!data.news || !data.news[idx]) return;
+      data.news[idx].read = true;
+      addXP(5);
+      saveData();
+      window.open(data.news[idx].sourceUrl, '_blank');
+    }
+    function rateNews(idx, rating) {
+      if (!data.news || !data.news[idx]) return;
+      data.news[idx].rating = rating;
+      data.news[idx].read = true;
+      addXP(3);
+      saveData();
+      render();
+    }
+    function toggleNewsSettings() {
+      const el = document.getElementById('news-settings');
+      el.style.display = el.style.display === 'none' ? 'block' : 'none';
+      // Load current settings
+      if (!data.newsConfig) data.newsConfig = { handles: '', topics: ['ai'] };
+      document.getElementById('news-handles').value = data.newsConfig.handles || '';
+      const topics = data.newsConfig.topics || ['ai'];
+      document.getElementById('topic-ai').checked = topics.includes('ai');
+      document.getElementById('topic-robotics').checked = topics.includes('robotics');
+      document.getElementById('topic-medicine').checked = topics.includes('medicine');
+      document.getElementById('topic-crypto').checked = topics.includes('crypto');
+      document.getElementById('topic-space').checked = topics.includes('space');
+      document.getElementById('topic-dubai').checked = topics.includes('dubai');
+    }
+    function saveNewsSettings() {
+      const handles = document.getElementById('news-handles').value;
+      const topics = [];
+      if (document.getElementById('topic-ai').checked) topics.push('ai');
+      if (document.getElementById('topic-robotics').checked) topics.push('robotics');
+      if (document.getElementById('topic-medicine').checked) topics.push('medicine');
+      if (document.getElementById('topic-crypto').checked) topics.push('crypto');
+      if (document.getElementById('topic-space').checked) topics.push('space');
+      if (document.getElementById('topic-dubai').checked) topics.push('dubai');
+      data.newsConfig = { handles: handles, topics: topics };
+      saveData();
+      toggleNewsSettings();
+      alert('Settings saved! News will be filtered based on your preferences.');
+    }
+    function openDreamModal() { 
+      closeJournalModal(); closeModal(); closeHabitModal(); closeAffirmationModal();
+      document.getElementById('dream-modal').classList.add('active'); 
+      setTimeout(() => document.getElementById('dream-text-input').focus(), 100); 
+    }
+    function closeDreamModal() { document.getElementById('dream-modal').classList.remove('active'); }
+    function saveDream() {
+      const text = document.getElementById('dream-text-input').value.trim();
+      if (!text) return;
+      if (!data.dreams) data.dreams = [];
+      data.dreams.unshift({ id: 'd' + Date.now(), text: text, date: new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) });
+      addXP(20);
+      saveData();
+      closeDreamModal();
+      document.getElementById('dream-text-input').value = '';
+      render();
+    }
+    let affirmationState = { currentIndex: 0, repeatCount: 0, inProgress: false };
+    function startAffirmationFlow() {
+      if (!data.affirmations || data.affirmations.length === 0) { alert('Add some affirmations first!'); return; }
+      affirmationState = { currentIndex: 0, repeatCount: 0, inProgress: true };
+      showAffirmation();
+      document.getElementById('affirmation-flow').classList.add('active');
+    }
+    function showAffirmation() {
+      const text = data.affirmations[affirmationState.currentIndex];
+      document.getElementById('affirmation-big').textContent = text;
+      document.getElementById('affirmation-progress').textContent = (affirmationState.repeatCount + 1) + '/3';
+      document.getElementById('affirmation-big').style.animation = 'none';
+      setTimeout(() => document.getElementById('affirmation-big').style.animation = 'fadeIn 0.5s ease', 10);
+    }
+    function advanceAffirmation() {
+      affirmationState.repeatCount++;
+      if (affirmationState.repeatCount >= 3) {
+        // Move to next affirmation
+        affirmationState.currentIndex++;
+        affirmationState.repeatCount = 0;
+        if (affirmationState.currentIndex >= data.affirmations.length) {
+          // All done!
+          completeAffirmationFlow();
+        } else {
+          showAffirmation();
+        }
+      } else {
+        showAffirmation();
+      }
+    }
+    function completeAffirmationFlow() {
+      addXP(50);
+      localStorage.setItem('davidCommandCenter_lastAffirm', new Date().toDateString());
+      saveData();
+      document.getElementById('affirmation-flow').innerHTML = '<div class="affirmation-complete"><div class="affirmation-complete-title">🎉 Amazing!</div><div class="affirmation-complete-points">+50 XP</div><button class="affirmation-complete-btn" onclick="closeAffirmationFlow()">Done</button></div>';
+      fireConfetti();
+    }
+    function closeAffirmationFlow() {
+      document.getElementById('affirmation-flow').classList.remove('active');
+      affirmationState.inProgress = false;
+      render();
+    }
+    // KT Manifestation Flow
+    const manifestSteps = [
+      { step: 'Step 1 of 5', title: 'Get Angry', desc: 'Think about what you don\'t have. What have others done to you? How dare they. Get angry about it. Feel that fire inside you.', bg: 'linear-gradient(135deg, #1a0a0a 0%, #2d1010 50%, #1a0a0a 100%)' },
+      { step: 'Step 2 of 5', title: 'I MUST Have It', desc: 'Convert that anger into determination. It\'s not a want — it\'s a NEED. I MUST have this. I DESERVE this.', bg: 'linear-gradient(135deg, #1a1a0a 0%, #2d2d10 50%, #1a1a0a 100%)' },
+      { step: 'Step 3 of 5', title: 'Feel Good / Visualize', desc: 'Now shift the energy. Imagine already having it. How does it feel? What does your life look like? Feel that feeling of having everything you want.', bg: 'linear-gradient(135deg, #0a1a0a 0%, #102d10 50%, #0a1a0a 100%)' },
+      { step: 'Step 4 of 5', title: 'Let Go', desc: 'Release attachment to the outcome. If it doesn\'t happen in this life, that\'s okay — God\'s plan is the best plan. Trust the universe.', bg: 'linear-gradient(135deg, #0a0a1a 0%, #10102d 50%, #0a0a1a 100%)' },
+      { step: 'Step 5 of 5', title: 'Smile & Hold', desc: 'Now smile. Rejoice. Continue feeling that amazing feeling without attachment. Hold this feeling for 67 seconds.', bg: 'linear-gradient(135deg, #1a0a1a 0%, #2d102d 50%, #1a0a1a 100%)', isTimer: true }
+    ];
+    let manifestStep = 0;
+    let manifestTimer = null;
+    function startManifestation() {
+      manifestStep = 0;
+      showManifestStep();
+      document.getElementById('manifestation-flow').classList.add('active');
+    }
+    function showManifestStep() {
+      const s = manifestSteps[manifestStep];
+      document.getElementById('manifestation-flow').style.background = s.bg;
+      document.getElementById('manifestation-step').textContent = s.step;
+      document.getElementById('manifestation-title').textContent = s.title;
+      document.getElementById('manifestation-desc').textContent = s.desc;
+      document.getElementById('manifestation-btn').textContent = manifestStep === manifestSteps.length - 1 ? 'Start 67s Timer' : 'Next Step →';
+      
+      // Hide timer by default
+      document.getElementById('manifestation-timer').style.display = 'none';
+      document.getElementById('manifestation-timer-label').style.display = 'none';
+      document.getElementById('manifestation-desc').style.display = 'block';
+      
+      if (s.isTimer) {
+        document.getElementById('manifestation-desc').style.display = 'none';
+        document.getElementById('manifestation-timer').style.display = 'block';
+        document.getElementById('manifestation-timer-label').style.display = 'block';
+      }
+    }
+    function nextManifestationStep() {
+      if (manifestStep < manifestSteps.length - 1) {
+        manifestStep++;
+        showManifestStep();
+      } else {
+        // Start 67 second timer
+        startManifestTimer();
+      }
+    }
+    function startManifestTimer() {
+      let seconds = 67;
+      document.getElementById('manifestation-btn').style.display = 'none';
+      document.getElementById('manifestation-timer').textContent = seconds;
+      manifestTimer = setInterval(() => {
+        seconds--;
+        document.getElementById('manifestation-timer').textContent = seconds;
+        if (seconds <= 0) {
+          clearInterval(manifestTimer);
+          completeManifestation();
+        }
+      }, 1000);
+    }
+    function completeManifestation() {
+      addXP(75);
+      localStorage.setItem('davidCommandCenter_lastManifest', new Date().toDateString());
+      saveData();
+      document.getElementById('manifestation-flow').innerHTML = '<div class="manifestation-complete"><div class="manifestation-complete-title">✨ Manifestation Complete</div><div class="manifestation-complete-sub">The universe has received your intention.<br>Now let it go and trust.<br><br>+75 XP!</div><button class="affirmation-complete-btn" onclick="closeManifestation()">Close</button></div>';
+      fireConfetti();
+    }
+    function closeManifestation() {
+      document.getElementById('manifestation-flow').classList.remove('active');
+      document.getElementById('manifestation-flow').innerHTML = '<div class="manifestation-step" id="manifestation-step">Step 1 of 5</div><div class="manifestation-title" id="manifestation-title">Get Angry</div><div class="manifestation-desc" id="manifestation-desc">Think about what you dont have. What have others done to you? How dare they. Get angry about it.</div><div class="manifestation-timer" id="manifestation-timer" style="display: none;">67</div><div class="manifestation-timer-label" id="manifestation-timer-label" style="display: none;">seconds of feeling</div><div class="manifestation-nav"><button id="manifestation-btn" onclick="nextManifestationStep()">Next Step →</button></div>';
+      if (manifestTimer) clearInterval(manifestTimer);
+      render();
+    }
+    function toggleHabit(id) {
+      const habit = data.habits.find(h => h.id === id);
+      if (!habit) return;
+      const today = new Date().toISOString().split('T')[0];
+      if (!habit.completedDates) habit.completedDates = [];
+      if (habit.completedDates.includes(today)) {
+        habit.completedDates = habit.completedDates.filter(d => d !== today);
+        habit.streak = Math.max(0, habit.streak - 1);
+      } else {
+        habit.completedDates.push(today);
+        habit.streak++;
+        if (habit.streak > habit.bestStreak) habit.bestStreak = habit.streak;
+      }
+      saveData();
+      render();
+    }
+    function deleteHabit(id) {
+      data.habits = data.habits.filter(h => h.id !== id);
+      saveData();
+      render();
+    }
+    function deleteAffirmation(idx) {
+      data.affirmations.splice(idx, 1);
+      saveData();
+      render();
+    }
+    let editingHabitId = null;
+    function openHabitModal(id) {
+      closeDreamModal(); closeJournalModal(); closeModal(); closeAffirmationModal();
+      editingHabitId = id;
+      const modal = document.getElementById('habit-modal');
+      const input = document.getElementById('habit-title-input');
+      if (id) {
+        const habit = data.habits.find(h => h.id === id);
+        input.value = habit ? habit.title : '';
+        document.getElementById('habit-modal-title').textContent = 'Edit Habit';
+      } else {
+        input.value = '';
+        document.getElementById('habit-modal-title').textContent = 'Add Habit';
+      }
+      modal.classList.add('active');
+      input.focus();
+    }
+    function closeHabitModal() {
+      document.getElementById('habit-modal').classList.remove('active');
+      editingHabitId = null;
+    }
+    function saveHabit() {
+      const title = document.getElementById('habit-title-input').value.trim();
+      if (!title) return;
+      const weeklyGoal = parseInt(document.getElementById('habit-weekly-goal').value) || 5;
+      if (editingHabitId) {
+        const habit = data.habits.find(h => h.id === editingHabitId);
+        if (habit) { habit.title = title; habit.weeklyGoal = weeklyGoal; }
+      } else {
+        if (!data.habits) data.habits = [];
+        data.habits.push({ id: 'h' + Date.now(), title: title, weeklyGoal: weeklyGoal, streak: 0, bestStreak: 0, completedDates: [], created: new Date().toISOString().split('T')[0] });
+      }
+      saveData();
+      closeHabitModal();
+      render();
+    }
+    let editingAffirmationIdx = null;
+    function openAffirmationModal(idx) {
+      closeDreamModal(); closeJournalModal(); closeModal(); closeHabitModal();
+      editingAffirmationIdx = idx;
+      const modal = document.getElementById('affirmation-modal');
+      const input = document.getElementById('affirmation-text-input');
+      if (idx !== null && idx !== undefined) {
+        input.value = data.affirmations[idx] || '';
+        document.getElementById('affirmation-modal-title').textContent = 'Edit Affirmation';
+      } else {
+        input.value = '';
+        document.getElementById('affirmation-modal-title').textContent = 'Add Affirmation';
+      }
+      modal.classList.add('active');
+      input.focus();
+    }
+    function closeAffirmationModal() {
+      document.getElementById('affirmation-modal').classList.remove('active');
+      editingAffirmationIdx = null;
+    }
+    function saveAffirmation() {
+      const text = document.getElementById('affirmation-text-input').value.trim();
+      if (!text) return;
+      if (!data.affirmations) data.affirmations = [];
+      if (editingAffirmationIdx !== null && editingAffirmationIdx !== undefined) {
+        data.affirmations[editingAffirmationIdx] = text;
+      } else {
+        data.affirmations.push(text);
+      }
+      saveData();
+      closeAffirmationModal();
+      render();
+    }
+    function toggleTask(id) {
+      const task = data.tasks.find(t => t.id === id);
+      if (!task) return;
+      const wasCompleted = task.status === 'completed';
+      task.status = task.status === 'completed' ? 'pending' : 'completed';
+      if (task.status === 'completed') {
+        task.completedAt = new Date().toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' });
+        data.doneLog.unshift({ id: task.id, title: task.title, completedAt: task.completedAt });
+        const today = new Date().toDateString();
+        if (data.user.lastCompletedDate !== today) {
+          const yesterday = new Date(); yesterday.setDate(yesterday.getDate() - 1);
+          if (data.user.lastCompletedDate === yesterday.toDateString()) { data.user.streak++; }
+          else if (data.user.lastCompletedDate !== today) { data.user.streak = 1; }
+          data.user.lastCompletedDate = today;
+        }
+        data.user.totalCompleted++;
+        data.user.weeklyCompleted++;
+        // Award XP based on priority
+        const xpMap = { urgent: 25, normal: 15, low: 10 };
+        const xp = xpMap[task.priority] || 10;
+        addXP(xp);
+        
+        // Link to goals - check if task matches any goal milestone
+        if (data.goals) {
+          data.goals.forEach(goal => {
+            goal.milestones.forEach((milestone, idx) => {
+              const m = milestone.toLowerCase();
+              const t = task.title.toLowerCase();
+              if (m.includes(t) || t.includes(m)) {
+                if (!goal.completedMilestones.includes(idx)) {
+                  goal.completedMilestones.push(idx);
+                }
+              }
+            });
+          });
+        }
+        
+        fireConfetti();
+      } else {
+        task.completedAt = null;
+        data.doneLog = data.doneLog.filter(d => d.id !== task.id);
+        data.user.weeklyCompleted = Math.max(0, data.user.weeklyCompleted - 1);
+      }
+      saveData();
+      render();
+    }
+    let selectedPriority = 'urgent';
+    function openModal() { 
+      closeDreamModal(); closeJournalModal(); closeHabitModal(); closeAffirmationModal();
+      document.getElementById('modal').classList.add('active'); 
+      setTimeout(() => document.getElementById('new-task-title').focus(), 100); 
+    }
+    function closeModal() { document.getElementById('modal').classList.remove('active'); document.getElementById('new-task-title').value = ''; }
+    function selectPriority(p) { selectedPriority = p; document.querySelectorAll('.priority-option').forEach(o => o.classList.remove('selected')); document.querySelector('[data-priority="' + p + '"]').classList.add('selected'); }
+    function addTask() {
+      const title = document.getElementById('new-task-title').value.trim();
+      if (!title) return;
+      const category = document.getElementById('new-task-category').value;
+      const newTask = { id: 't' + Date.now(), title: title, priority: selectedPriority, status: 'pending', category: category, created: new Date().toISOString().split('T')[0], completedAt: null };
+      data.tasks.unshift(newTask);
+      saveData();
+      render();
+      closeModal();
+    }
+    document.addEventListener('keydown', function(e) { if (e.key === 'Escape') { closeModal(); closeHabitModal(); closeAffirmationModal(); closeDreamModal(); closeJournalModal(); } });
+    function fireConfetti() {
+      const canvas = document.getElementById('confetti-canvas');
+      const ctx = canvas.getContext('2d');
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+      const particles = [];
+      const colors = ['#6366f1', '#8b5cf6', '#22c55e', '#f59e0b', '#ef4444'];
+      for (let i = 0; i < 150; i++) { particles.push({ x: canvas.width/2, y: canvas.height/2, vx: (Math.random() - 0.5) * 20, vy: (Math.random() - 0.5) * 20 - 10, color: colors[Math.floor(Math.random() * colors.length)], size: Math.random() * 8 + 4, alpha: 1 }); }
+      function animate() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        particles.forEach((p, i) => { p.x += p.vx; p.y += p.vy; p.vy += 0.5; p.alpha -= 0.02; ctx.fillStyle = p.color; ctx.globalAlpha = p.alpha; ctx.fillRect(p.x, p.y, p.size, p.size); });
+        ctx.globalAlpha = 1;
+        if (particles.some(p => p.alpha > 0)) { requestAnimationFrame(animate); } else { ctx.clearRect(0, 0, canvas.width, canvas.height); }
+      }
+      animate();
+    }
+    function showLevelInfo() {
+      const levels = [
+        { lvl: 1, xp: 0, title: 'Seed', emoji: '🥚' },
+        { lvl: 2, xp: 500, title: 'Sprout', emoji: '🥚' },
+        { lvl: 3, xp: 1200, title: 'Sprouting', emoji: '🥚' },
+        { lvl: 4, xp: 2000, title: 'Rooted', emoji: '🥚' },
+        { lvl: 5, xp: 3000, title: 'HATCH!', emoji: '🐣' },
+        { lvl: 10, xp: 8000, title: 'Teen', emoji: '✨' },
+        { lvl: 20, xp: 23000, title: 'Adult', emoji: '💪' },
+        { lvl: 33, xp: 33000, title: 'LEGENDARY', emoji: '👑' }
+      ];
+      let html = '<div style="text-align: left; font-size: 12px;"><div style="font-size: 14px; font-weight: bold; margin-bottom: 8px;">🎮 LEVELS GUIDE <span onclick="hideLevelInfo()" style="float:right;cursor:pointer;opacity:0.5;">✕</span></div>';
+      levels.forEach(l => {
+        html += '<div style="padding: 6px 0; border-bottom: 1px solid #333;"><span style="font-size: 14px;">' + l.emoji + '</span> <strong>L' + l.lvl + '</strong>: ' + l.xp + ' XP - ' + l.title + '</div>';
+      });
+      html += '<div style="margin-top: 10px; padding: 8px; background: #222; border-radius: 6px; font-size: 11px;"><strong>💡 Tips:</strong><br>• First 5 levels fast!<br>• Tasks: +10-25 XP<br>• Affirm: +50 XP<br>• Manifest: +75 XP<br>• Habits: +10/day</div></div>';
+      document.getElementById('level-info-overlay').innerHTML = html;
+      document.getElementById('level-info-overlay').style.display = 'block';
+    }
+    function hideLevelInfo() {
+      document.getElementById('level-info-overlay').style.display = 'none';
+    }
+  // Password system
+function getUserPassword() { return localStorage.getItem("davidCommandCenter_password"); }
+function setUserPassword(pw) { localStorage.setItem("davidCommandCenter_password", pw); }
+function hasPassword() { return !!getUserPassword(); }
+}
+</script>
+</body>
+</html>
