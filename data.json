@@ -1,0 +1,324 @@
+{
+  "user": {
+    "name": "David",
+    "streak": 0,
+    "lastCompletedDate": null,
+    "totalCompleted": 0,
+    "weeklyGoal": 20,
+    "weeklyCompleted": 0,
+    "affirmationPoints": 0
+  },
+  "tasks": [
+    {
+      "id": "t1",
+      "title": "Make new easyJet refund request for parents",
+      "priority": "urgent",
+      "status": "pending",
+      "category": "personal",
+      "created": "2026-03-16",
+      "completedAt": null
+    },
+    {
+      "id": "t2",
+      "title": "Reply to Luxembourg embassy email",
+      "priority": "urgent",
+      "status": "pending",
+      "category": "personal",
+      "created": "2026-03-16",
+      "completedAt": null
+    },
+    {
+      "id": "t3",
+      "title": "Make Luxembourgish passport",
+      "priority": "normal",
+      "status": "pending",
+      "category": "personal",
+      "created": "2026-03-16",
+      "completedAt": null
+    },
+    {
+      "id": "t4",
+      "title": "Wash car",
+      "priority": "normal",
+      "status": "pending",
+      "category": "personal",
+      "created": "2026-03-16",
+      "completedAt": null
+    },
+    {
+      "id": "t5",
+      "title": "Take pictures of car",
+      "priority": "normal",
+      "status": "pending",
+      "category": "personal",
+      "created": "2026-03-16",
+      "completedAt": null
+    },
+    {
+      "id": "t6",
+      "title": "Put car to sell + research Portugal platforms",
+      "priority": "normal",
+      "status": "pending",
+      "category": "personal",
+      "created": "2026-03-16",
+      "completedAt": null
+    },
+    {
+      "id": "t7",
+      "title": "Make Higgsfield account",
+      "priority": "normal",
+      "status": "pending",
+      "category": "solfaia",
+      "created": "2026-03-16",
+      "completedAt": null
+    },
+    {
+      "id": "t8",
+      "title": "Create vector DB for solfaia.com chat agent (n8n)",
+      "priority": "normal",
+      "status": "pending",
+      "category": "solfaia",
+      "created": "2026-03-16",
+      "completedAt": null
+    },
+    {
+      "id": "t9",
+      "title": "Create vector DB for solfaia.com voice agent (LiveKit)",
+      "priority": "normal",
+      "status": "pending",
+      "category": "solfaia",
+      "created": "2026-03-16",
+      "completedAt": null
+    },
+    {
+      "id": "t10",
+      "title": "Add guardrails to voice agent (abuse protection)",
+      "priority": "normal",
+      "status": "pending",
+      "category": "solfaia",
+      "created": "2026-03-16",
+      "completedAt": null
+    }
+  ],
+  "goals": [
+    {
+      "id": "g1",
+      "title": "Launch Solfaia Voice Agent",
+      "progress": 0,
+      "milestones": [
+        "Create vector DB (chat)",
+        "Create vector DB (voice)",
+        "Add guardrails",
+        "Deploy to production"
+      ],
+      "completedMilestones": []
+    },
+    {
+      "id": "g2",
+      "title": "Sell Car",
+      "progress": 0,
+      "milestones": [
+        "Wash car",
+        "Take pictures",
+        "Research platforms",
+        "List car"
+      ],
+      "completedMilestones": []
+    }
+  ],
+  "habits": [
+    {
+      "id": "h1",
+      "title": "Morning Routine",
+      "weeklyGoal": 7,
+      "streak": 0,
+      "bestStreak": 0,
+      "completedDates": [],
+      "created": "2026-03-16"
+    },
+    {
+      "id": "h2",
+      "title": "Exercise 30min",
+      "weeklyGoal": 5,
+      "streak": 0,
+      "bestStreak": 0,
+      "completedDates": [],
+      "created": "2026-03-16"
+    },
+    {
+      "id": "h3",
+      "title": "Read 20 pages",
+      "weeklyGoal": 6,
+      "streak": 0,
+      "bestStreak": 0,
+      "completedDates": [],
+      "created": "2026-03-16"
+    },
+    {
+      "id": "h4",
+      "title": "Meditate 10min",
+      "weeklyGoal": 5,
+      "streak": 0,
+      "bestStreak": 0,
+      "completedDates": [],
+      "created": "2026-03-16"
+    },
+    {
+      "id": "h5",
+      "title": "Journal / Reflect",
+      "weeklyGoal": 5,
+      "streak": 0,
+      "bestStreak": 0,
+      "completedDates": [],
+      "created": "2026-03-16"
+    }
+  ],
+  "affirmations": [
+    "I am capable of achieving anything I set my mind to",
+    "Every day I am getting closer to my goals",
+    "I attract abundance in all areas of my life",
+    "I am worthy of success and happiness",
+    "My potential is limitless",
+    "I choose to be confident and powerful",
+    "I am in charge of my own happiness",
+    "Every challenge helps me grow stronger",
+    "I deserve all the good things life offers",
+    "Today I will make progress, not excuses"
+  ],
+  "affirmationState": {
+    "currentIndex": 0,
+    "repeatCount": 0,
+    "inProgress": false,
+    "completedToday": false,
+    "todayDate": null
+  },
+  "dreams": [],
+  "doneLog": [],
+  "inbox": [],
+  "moonData": {
+    "currentPhase": "Waning Crescent",
+    "nextNewMoon": "2026-03-19",
+    "nextFullMoon": "2026-04-01",
+    "newMoons2026": [
+      {"date": "2026-01-03", "time": "10:02"},
+      {"date": "2026-01-18", "time": "19:52"},
+      {"date": "2026-02-17", "time": "12:01"},
+      {"date": "2026-03-19", "time": "01:23"},
+      {"date": "2026-04-17", "time": "12:51"},
+      {"date": "2026-05-16", "time": "21:01"},
+      {"date": "2026-06-15", "time": "03:54"},
+      {"date": "2026-07-14", "time": "10:43"},
+      {"date": "2026-08-12", "time": "18:36"},
+      {"date": "2026-09-11", "time": "04:27"},
+      {"date": "2026-10-10", "time": "16:50"},
+      {"date": "2026-11-09", "time": "07:02"},
+      {"date": "2026-12-09", "time": "00:51"}
+    ],
+    "fullMoons2026": [
+      {"date": "2026-01-10", "time": "15:48"},
+      {"date": "2026-01-26", "time": "04:47"},
+      {"date": "2026-02-24", "time": "12:27"},
+      {"date": "2026-03-25", "time": "19:17"},
+      {"date": "2026-04-01", "time": ""},
+      {"date": "2026-04-24", "time": "03:31"},
+      {"date": "2026-05-23", "time": "12:10"},
+      {"date": "2026-06-21", "time": "22:55"},
+      {"date": "2026-07-21", "time": "12:05"},
+      {"date": "2026-08-20", "time": "03:46"},
+      {"date": "2026-09-18", "time": "21:43"},
+      {"date": "2026-10-18", "time": "17:12"},
+      {"date": "2026-11-17", "time": "11:47"},
+      {"date": "2026-12-17", "time": "05:42"}
+    ]
+  },
+  "news": [
+    {
+      "id": "n1",
+      "title": "OpenClaw 3.13 - 50% memory reduction, hardened Docker",
+      "category": "ai",
+      "priority": "urgent",
+      "source": "@boxmining",
+      "sourceUrl": "https://x.com/boxmining/status/2033466493619560561",
+      "date": "2026-03-16",
+      "time": "11:15",
+      "summary": "OpenClaw update brings major performance improvements and bug fixes"
+    },
+    {
+      "id": "n2",
+      "title": "Mission Control goes multi-device - control agents from anywhere",
+      "category": "ai",
+      "priority": "important",
+      "source": "@ziwenxu_",
+      "sourceUrl": "https://x.com/ziwenxu_/status/2033416371254546888",
+      "date": "2026-03-16",
+      "time": "05:33",
+      "summary": "OpenClaw Mission Control now works across M4 Mac Mini, laptop, phone"
+    },
+    {
+      "id": "n3",
+      "title": "Claude Certified Architect (CCA-F) - Free official certification",
+      "category": "ai",
+      "priority": "important",
+      "source": "@dr_cintas",
+      "sourceUrl": "https://x.com/dr_cintas/status/2033600763130192229",
+      "date": "2026-03-16",
+      "time": "17:46",
+      "summary": "Anthropic launches free certification: Agentic Architecture, Tool Design, Prompt Engineering"
+    },
+    {
+      "id": "n4",
+      "title": "Context Hub by Andrew Ng - fixes AI coding agent hallucinations",
+      "category": "ai",
+      "priority": "important",
+      "source": "@socialwithaayan",
+      "sourceUrl": "https://x.com/socialwithaayan/status/2033199125572071819",
+      "date": "2026-03-15",
+      "time": "14:00",
+      "summary": "Versioned documentation registry for 68+ APIs - MIT licensed, free"
+    },
+    {
+      "id": "n5",
+      "title": "Claude Code Infinite Memory - 95% fewer tokens, 20x more tool calls",
+      "category": "ai",
+      "priority": "interesting",
+      "source": "@RoundtableSpace",
+      "sourceUrl": "https://x.com/RoundtableSpace/status/2033207845521707471",
+      "date": "2026-03-15",
+      "time": "15:00",
+      "summary": "Free open-source solution for Claude Code memory management"
+    },
+    {
+      "id": "n6",
+      "title": "Okara AI - World's first AI CMO launches",
+      "category": "tech",
+      "priority": "interesting",
+      "source": "@hasantoxr",
+      "sourceUrl": "https://x.com/hasantoxr/status/2033567952407277917",
+      "date": "2026-03-16",
+      "time": "15:35",
+      "summary": "AI agent team for SEO, Reddit, X, content - privacy-first with open models"
+    },
+    {
+      "id": "n7",
+      "title": "Ollama now official OpenClaw provider",
+      "category": "ai",
+      "priority": "interesting",
+      "source": "@steipete",
+      "sourceUrl": "https://x.com/steipete/status/2033347816274510200",
+      "date": "2026-03-16",
+      "time": "01:01",
+      "summary": "Run local models via Ollama with official OpenClaw integration"
+    },
+    {
+      "id": "n8",
+      "title": "OpenClaw adds 1M context + adaptive thinking for Anthropic",
+      "category": "ai",
+      "priority": "important",
+      "source": "@steipete",
+      "sourceUrl": "https://x.com/steipete/status/2033612936933994850",
+      "date": "2026-03-16",
+      "time": "18:34",
+      "summary": "Major update improves Claude/Anthropic model support significantly"
+    }
+  ]
+}
